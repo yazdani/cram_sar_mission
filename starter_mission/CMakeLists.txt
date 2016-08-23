@@ -20,6 +20,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslisp
   message_generation
   message_runtime
+  geometry_msgs
 )
 
 ## System dependencies are found with CMake's conventions
