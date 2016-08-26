@@ -1,0 +1,4 @@
+<launch>
+ <node pkg="instructor_mission" type="ros_parser" name="ros_parser" respawn="false" output="screen" />
+ <node pkg="instructor_mission" type="shutdown_parser" name="shutdown_parser" respawn="false" output="screen" />
+</launch>

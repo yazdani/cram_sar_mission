@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  message_generation
+  message_runtime
   tf
 )
 
@@ -48,18 +50,17 @@ find_package(catkin REQUIRED COMPONENTS
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+   FILES
+   protocol_dialogue.msg
+)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+   FILES
+   text_parser.srv
+   cram_reason.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -69,10 +70,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   geographic_msgs#   geometry_msgs#   std_msgs
-# )
+ generate_messages(
+   DEPENDENCIES
+  geometry_msgs   std_msgs
+ )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -106,7 +107,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES instructor_mission
-#  CATKIN_DEPENDS cram_designators geographic_msgs geometry_msgs roscpp rospy std_msgs tf
+  CATKIN_DEPENDS geometry_msgs message_generation message_runtime roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
 
@@ -142,6 +143,13 @@ include_directories(
 # target_link_libraries(instructor_mission_node
 #   ${catkin_LIBRARIES}
 # )
+add_executable(ros_parser nodes_cpp/ros_parser.cpp)
+target_link_libraries(ros_parser ${catkin_LIBRARIES})
+add_dependencies(ros_parser instructor_mission_gencpp)
+
+add_executable(shutdown_parser nodes_cpp/shutdown_parser.cpp)
+target_link_libraries(shutdown_parser ${catkin_LIBRARIES})
+add_dependencies(shutdown_parser instructor_mission_gencpp)
 
 #############
 ## Install ##

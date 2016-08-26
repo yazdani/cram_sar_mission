@@ -28,6 +28,25 @@
 
 (in-package :starter-mission)
 
+(defun start-my-ros ()
+  (roslisp-utilities:startup-ros))
+
+;; ROSSERVICE FOR DOING REASONING
+
+(defun start_reasoning_service ()
+  (reasoning-call))
+
+(defun reasoning-call ()
+ (roslisp-utilities:startup-ros :name "start_reasoning_service")
+  (roslisp:register-service "service_cram_reasoning" 'instructor_mission-srv:cram_reason)
+  (roslisp:ros-info (basics-system) "start reasoning service")
+ (roslisp:spin-until nil 1000))
+
+(roslisp:def-service-callback instructor_mission-srv:cram_reason (cmd)
+  (let*((liste (parsing-instruction cmd)))
+  (roslisp:make-response :objects liste)))
+
+
 (defun starter-mission ()
   (let*((desig (make-designator :location `((:left-of "bigtree03")))))
     (reference desig)

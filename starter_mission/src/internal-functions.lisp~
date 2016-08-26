@@ -1,0 +1,137 @@
+;;; Copyright (c) 2016, Fereshta Yazdani <yazdani@cs.uni-bremen.de>
+;;; All rights reserved.
+;; 
+;;; Redistribution and use in source and binary forms, with or without
+;;; modification, are permitted provided that the following conditions are met:
+;;; 
+;;;     * Redistributions of source code must retain the above copyright
+;;;       notice, this list of conditions and the following disclaimer.
+;;;     * Redistributions in binary form must reproduce the above copyright
+;;;       notice, this list of conditions and the following disclaimer in the
+;;;       documentation and/or other materials provided with the distribution.
+;;;     * Neither the name of the Institute for Artificial Intelligence/
+;;;       Universitaet Bremen nor the names of its contributors may be used to 
+;;;       endorse or promote products derived from this software without 
+;;;       specific prior written permission.
+;;; 
+;;; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+;;; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+;;; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+;;; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+;;; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+;;; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+;;; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+;;; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+;;; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+;;; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+;;; POSSIBILITY OF SUCH DAMAGE.
+
+(in-package :starter-mission)
+
+(defun parsing-instruction (cmd)
+  "move(to,small,tree)
+  move(to,pointed_at,tree)
+  take(picture,nil,nil)
+  take(picture,small,tree)
+  move(to,small,tree);move(next,big,house);take(picture,nil,nil)"
+  (let*((seqs (split-sequence:split-sequence #\; cmd))
+        (elem NIL))
+    (cond ((= (length seqs) 1)
+           (if (string-equal (split-action (first seqs)) "move")
+               (setf elem "move");;(desig-move seqs))
+               (setf elem (first seqs))));;(desig-take seqs))))
+          (t ()))
+    elem))
+
+
+(defun desig-move (cmd)
+      )
+
+(defun get-objects-infrontof-human ()
+(let*((liste '())
+      (sem-map (sem-map-utils:get-semantic-map))
+      (aliste '()))
+  (dotimes (index 40)
+    (if (>= 10 (length liste))
+        (setf liste (get-elements-infrontof-human index)) 
+        (return)))
+  (reverse liste)))
+
+(defun get-elems-infrontof-human (num)
+  (let* ((sem-map (sem-map-utils:get-semantic-map))
+         (sem-hash (slot-value sem-map 'sem-map-utils:parts))
+         (sem-keys (hash-table-keys sem-hash))
+         (poses '()) (dist NIL) (liste '())
+         (pub NIL)(obj-pub NIL)(obj-pose NIL) (obj-map NIL))
+    (dotimes (index (length sem-keys))
+      (if (or (string-equal (nth index sem-keys) "human01")
+              (string-equal (nth index sem-keys)  "human02")
+              (string-equal (nth index sem-keys)  "human03"))
+          ()
+          (setf liste (cons (nth index sem-keys) liste))))
+    (dotimes (index (length liste))
+      (setf obj-pose (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* "human" (format NIL "~a_link" (nth index liste)))))
+         (setf obj-pose2 (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* "map" (format NIL "~a_link" (nth index liste)))))
+      (setf dist (get-distance (human-relative-map-pose) obj-pose2))
+      (if (and (>= num dist)
+               (plusp (cl-transforms:x (cl-transforms:origin obj-pose))))
+                (setf poses (cons (format NIL "~a - ~a"(nth index liste) dist) poses))))
+       poses))
+
+
+(defun get-distance (pose1 pose2)
+(let*((vector (cl-transforms:origin pose1))
+        (x-vec (cl-transforms:x vector))
+        (y-vec (cl-transforms:y vector))
+        (z-vec (cl-transforms:z vector))
+        (ge-vector (cl-transforms:origin pose2))
+        (x-ge (cl-transforms:x ge-vector))
+        (y-ge (cl-transforms:y ge-vector))
+        (z-ge (cl-transforms:z ge-vector)))
+    (round (sqrt (+ (square (- x-vec x-ge))
+             (square (- y-vec y-ge))
+             (square (- z-vec z-ge)))))))
+
+
+(defun get-desig-resolution (action preposition objname)
+  (setf tom NIL)
+(if (string-equal preposition "null")
+    (setf tom (get-elem-pose objname))
+    (let*((desig (make-designator :location `((,(direction-symbol preposition) ,objname))))
+          (result NIL)
+          (cam (cam-depth-tf-transform))
+          (temp NIL)
+          (tmp NIL))
+      (setf result (reference desig))
+      (if (equal *puby* NIL)
+          ()
+          (remove-local-tf-publisher *puby*))
+      (setf temp (look-at-object-x (cl-transforms:make-pose (cl-transforms:origin (cl-transforms-stamped:pose-stamped->pose result)) (cl-transforms:orientation (cl-transforms:transform->pose cam)))  (get-human-elem-pose objname)))
+      (setf tmp (cl-transforms-stamped:make-pose-stamped "human"
+							 0.0 (cl-transforms:origin temp)
+							 (cl-transforms:orientation temp)))
+      (setf tom (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose tmp :target-frame "map")))
+      (format t "tom is ~a~%" tom)
+      (setf *puby* (create-local-tf-publisher tom "test"))))
+  tom)
+
+
+;;take(picture,small,tree);move(to,small,tree) => take(picture,small,tree) move(to,small,tree)
+(defun split-columns (cmd)
+  (split-sequence:split-sequence #\; cmd))
+
+;;take(picture,small,tree) => take
+(defun split-action (cmd)
+  (first (split-sequence:split-sequence #\( cmd)))
+
+;;move(to,small,tree) => to
+(defun split-spatial-relation (cmd)
+  (first (split-sequence:split-sequence #\, (second (split-sequence:split-sequence #\( cmd)))))
+
+;;take(picture,small,tree) => small
+(defun split-property (cmd)
+  (second (split-sequence:split-sequence #\, (second (split-sequence:split-sequence #\( cmd)))))
+
+;;move(to,small,tree) => tree
+(defun split-object (cmd)
+  (first (split-sequence:split-sequence #\) (third (split-sequence:split-sequence #\, (second (split-sequence:split-sequence #\( cmd)))))))

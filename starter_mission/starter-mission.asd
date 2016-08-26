@@ -40,6 +40,7 @@
                cram-bullet-reasoning-designators
 	       cl-tf
                cram-semantic-map-designators
+	       instructor_mission-srv
                alexandria)
   :components
   ((:module "src"
@@ -48,4 +49,5 @@
      (:file "costmap-knowledge" :depends-on("package"))
      (:file "cost-functions" :depends-on ("package"))
      (:file "prolog" :depends-on ("package" "cost-functions"))
-     (:file "starter" :depends-on ("package" "costmap-knowledge" "prolog"))))))
+     (:file "starter" :depends-on ("package" "costmap-knowledge" "prolog"))
+     (:file "internal-functions" :depends-on ("package" "starter" "costmap-knowledge" "prolog"))))))

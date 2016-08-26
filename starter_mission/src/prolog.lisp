@@ -74,7 +74,7 @@
     (instance-of reasoning-generator ?reasoning-generator-id)
     (costmap-add-function
      ?reasoning-generator-id
-     (make-spatial-relations-cost-function ?object-pose :X > 0.1)
+     (make-spatial-relations-cost-function ?object-pose :X < 0.1)
      ?costmap)
     (adjust-map ?costmap ?object-pose))
 
@@ -86,9 +86,15 @@
     (instance-of reasoning-generator ?reasoning-generator-id)
     (costmap-add-function
      ?reasoning-generator-id
-     (make-spatial-relations-cost-function ?object-pose :X < 0.1)
+     (make-spatial-relations-cost-function ?object-pose :X > 0.1)
      ?costmap)
-      (format "teeest~%")
+    (adjust-map ?costmap ?object-pose))
+
+      (<- (prepositions ?desig ?pose ?costmap)
+    (or (desig-prop ?desig (:to ?object-name))
+        (desig-prop ?desig (:next ?object-name))
+        (desig-prop ?desig (:close-to ?object-name)))
+    (lisp-fun get-human-elem-pose ?object-name ?object-pose)
     (adjust-map ?costmap ?object-pose))
   
   (<- (adjust-map ?costmap ?object-pose)
@@ -102,5 +108,5 @@
     (costmap ?costmap)
     (instance-of gaussian-generator ?gaussian-generator-id)
     (costmap-add-function ?gaussian-generator-id
-                          (make-location-cost-function ?object-pose  8.0)
+                          (make-location-cost-function ?object-pose  3.0)
                           ?costmap)))

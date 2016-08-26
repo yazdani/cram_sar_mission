@@ -28,11 +28,30 @@
 
 (in-package :starter-mission)
 
-(def-fact-group costmap-metadata ()
-   (<- (costmap-size 200 200))
-  (<- (costmap-origin 0 0))
-  (<- (costmap-resolution 0.95))
-  (<- (costmap-padding 0.3)))
 
-(desig::disable-location-validation-function 'btr-desig::validate-designator-solution)
-(desig::disable-location-validation-function 'btr-desig::check-ik-solution)
+(defun one-desig-move (cmd)
+  (let*((computed-object NIL)
+        (desig NIL))
+    (if (string-equal (split-property cmd) "pointed_at")
+        (setf computed-object NIL) ;;gesture calculation
+        (setf computed-object (get-type-by-listobject-infrontof-human (split-object cmd))))
+    (setf desig
+          (make-designator :location `((,(direction-symbol (split-spatial-relation cmd)) ,computed-object))))
+    desig))
+
+(defun one-desig-take (cmd)
+ (let*((computed-object NIL)
+        (desig NIL))
+   (if (and (string-equal (split-spatial-relation cmd))
+            (string-equal (split-object cmd) NIL))
+       (setf computed-object NIL)
+       (setf computed-object (get-type-by-listobject-infrontof-human (split-object cmd))))
+   (setf desig
+         (make-designator :location `((:to ,computed-object))))
+    desig))
+
+(defun multiple-desig-move (cmd)
+  )
+
+(defun multiple-desig-take (cmd)
+  )
