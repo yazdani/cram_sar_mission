@@ -151,6 +151,11 @@ add_executable(shutdown_parser nodes_cpp/shutdown_parser.cpp)
 target_link_libraries(shutdown_parser ${catkin_LIBRARIES})
 add_dependencies(shutdown_parser instructor_mission_gencpp)
 
+add_executable(cmd_to_points nodes_cpp/cmd_to_points.cpp)
+target_link_libraries(cmd_to_points ${catkin_LIBRARIES})
+add_dependencies(cmd_to_points instructor_mission_gencpp)
+
+
 #############
 ## Install ##
 #############
