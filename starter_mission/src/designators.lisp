@@ -30,6 +30,7 @@
 
 
 (defun one-desig-move (cmd elem property)
+  (format t "one-desig-move ~%")
   (let*((computed-object NIL)
         (desig NIL)
         (new-elem NIL))
@@ -50,14 +51,23 @@
             (make-designator :location `((,(direction-symbol (split-spatial-relation cmd)) ,elem))))))
     (list elem property desig)))
 
+;; take(picture,NIL,NIL);take(right,NIL,tree)
 (defun multiple-desig-take (index seqs elem property)
   (let*((computed-object NIL)
-        (index (+ 1 index)))
+        (index (+ 1 index))
+        (desig NIL)
+        (new-elem))
     (if(string-equal (split-property (nth index seqs)) "pointed_at")
        (setf computed-object NIL) ;;gesture calculation TODO
        (setf computed-object ;; did not consider small, big etc.
              (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs)))))
-        computed-object))
+    (cond ((string-equal (split-object (nth index seqs)) elem)
+           (setf elem computed-object)
+           (setf desig  (make-designator :location `((,(direction-symbol (split-spatial-relation (nth index seqs))) ,computed-object)))))
+          (t (setf new-elem (calculate-the-specific-object elem property (split-object (nth index seqs))))
+         (setf desig
+            (make-designator :location `((:to ,new-elem))))))  
+desig))
         
     
 
@@ -81,3 +91,39 @@ desig))
 
   
 
+(defun get-value-basedon-type->get-objects-infrontof-human (obj)
+ ;; (format t "what is obj ~a~%" obj)
+  (let*((seqs (get-objects-infrontof-human))
+        (check 1000)
+        (elem NIL))
+   ;; (format t "seqs ~a~%" seqs)
+    (dotimes (index (length seqs))
+      (let*((liste  (split-sequence:split-sequence #\: (nth index seqs)))
+            (typ (get-elem-type (first liste)))
+            (num (parse-integer (second liste))))
+      ;;  (format t "liste ~a~% (first liste) ~a~%" liste (first liste))
+        (cond ((and (string-equal typ obj)
+                    (>= check num))
+               (setf check num)
+               (setf elem (first liste)))
+              (t ()))))
+   ;; (format t "elem is ~a~%" elem)
+    elem))
+
+(defun calculate-the-specific-object (obj property type)
+  (let*((liste (get-specific-elements-close-to-object obj type))
+        (rel-list '())
+        (small-obj NIL)
+        (check 1000))
+    (dotimes (index (length liste))
+      (if (equal T (checking-objects-relation (first (split-sequence:split-sequence #\: (nth index liste))) obj property))
+          (setf rel-list (cons (list (nth index liste)) rel-list))))
+    (if (= 0 (length rel-list))
+        (setf rel-list (cons (list (get-smallest-of-liste liste)) rel-list)))
+    (setf rel-list (reverse rel-list))
+    (dotimes (index (length rel-list))
+      (cond((<= (parse-integer (second (split-sequence:split-sequence #\: (first (nth index rel-list))))) check)
+          (setf check (parse-integer (second (split-sequence:split-sequence #\: (first (nth index rel-list))))))
+          (setf small-obj (first (split-sequence:split-sequence #\: (first (nth index rel-list))))))
+           (t ())))
+    small-obj))

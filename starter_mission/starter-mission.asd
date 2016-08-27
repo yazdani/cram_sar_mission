@@ -49,5 +49,8 @@
      (:file "costmap-knowledge" :depends-on("package"))
      (:file "cost-functions" :depends-on ("package"))
      (:file "prolog" :depends-on ("package" "cost-functions"))
-     (:file "starter" :depends-on ("package" "costmap-knowledge" "prolog"))
-     (:file "internal-functions" :depends-on ("package" "starter" "costmap-knowledge" "prolog"))))))
+     (:file "starter" :depends-on ("package" "internal-functions"))
+     (:file "internal-functions" :depends-on ("package" "costmap-knowledge" "prolog" "designators"))
+     (:file "designators" :depends-on ("package"))
+
+))))
