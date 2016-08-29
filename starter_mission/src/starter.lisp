@@ -83,5 +83,5 @@
                      keys))
 
 (defun get-human-elem-pose (object-name)
-  (setf cram-tf:*fixed-frame* "human")
+ (setf cram-tf:*fixed-frame* "human")
   (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* "human" (format NIL "~a_link" object-name))))

@@ -43,7 +43,7 @@
   (<- (desig-costmap ?desig ?costmap)
     (costmap ?costmap)
     (prepositions ?desig ?pose ?costmap))
-
+  
   (<- (prepositions ?desig ?pose ?costmap)
     (or (desig-prop ?desig (:right ?object-name))
         (desig-prop ?desig (:right-of ?object-name)))
@@ -53,8 +53,8 @@
      ?reasoning-generator-id
      (make-spatial-relations-cost-function ?object-pose :Y < 0.1)
      ?costmap)
-    (adjust-map ?costmap ?object-pose))
-
+    (adjust-map ?costmap ?object-name ?object-pose))
+  
 
   (<- (prepositions ?desig ?pose ?costmap)
     (or (desig-prop ?desig (:left ?object-name))
@@ -65,7 +65,8 @@
      ?reasoning-generator-id
      (make-spatial-relations-cost-function ?object-pose :Y > 0.1)
      ?costmap)
-    (adjust-map ?costmap ?object-pose))
+    (adjust-map ?costmap ?object-name ?object-pose)) 
+
 
   (<- (prepositions ?desig ?pose ?costmap)
     (or (desig-prop ?desig (:front-of ?object-name))
@@ -76,8 +77,8 @@
      ?reasoning-generator-id
      (make-spatial-relations-cost-function ?object-pose :X < 0.1)
      ?costmap)
-    (adjust-map ?costmap ?object-pose))
-
+    (adjust-map ?costmap ?object-name ?object-pose))
+   
   
     (<- (prepositions ?desig ?pose ?costmap)
     (or (desig-prop ?desig (:behind ?object-name))
@@ -88,25 +89,30 @@
      ?reasoning-generator-id
      (make-spatial-relations-cost-function ?object-pose :X > 0.1)
      ?costmap)
-    (adjust-map ?costmap ?object-pose))
+      (adjust-map ?costmap ?object-name ?object-pose))
 
       (<- (prepositions ?desig ?pose ?costmap)
     (or (desig-prop ?desig (:to ?object-name))
         (desig-prop ?desig (:next ?object-name))
         (desig-prop ?desig (:close-to ?object-name)))
-    (lisp-fun get-human-elem-pose ?object-name ?object-pose)
-    (adjust-map ?costmap ?object-pose))
-  
-  (<- (adjust-map ?costmap ?object-pose)
-    (semantic-map-costmap::semantic-map-objects ?all-objects)
-    (lisp-fun get-objects-closeto-pose ?all-objects 10 ?object-pose ?objects)
-    (costmap-padding ?padding)
-    (costmap-add-function semantic-map-free-space
-                          (semantic-map-costmap::make-semantic-map-costmap
-                           ?objects :invert t :padding ?padding)
-                          ?costmap)
-    (costmap ?costmap)
-    (instance-of gaussian-generator ?gaussian-generator-id)
-    (costmap-add-function ?gaussian-generator-id
-                          (make-location-cost-function ?object-pose  3.0)
-                          ?costmap)))
+        (lisp-fun get-human-elem-pose ?object-name ?object-pose)
+        (adjust-map ?costmap ?object-name ?object-pose))
+
+  ;;
+  ;; Watch out, for the free-space you generated
+  ;; a new generator which is based on the human-frame
+  ;;
+  (<- (adjust-map ?costmap ?object-name ?object-pose)
+   (semantic-map-costmap::semantic-map-objects ?all-objects)
+   (lisp-fun get-elem-pose ?object-name ?pose)
+   (lisp-fun get-objects-closeto-pose ?all-objects 10 ?pose ?objects)
+   (costmap-padding ?padding)
+   (costmap-add-function semantic-map-free-space
+                        (make-semantic-map-costmap-by-human
+                         ?objects :invert t :padding ?padding)
+                        ?costmap)
+   (costmap ?costmap)
+   (instance-of gaussian-generator ?gaussian-generator-id)
+   (costmap-add-function ?gaussian-generator-id
+                        (make-location-cost-function ?object-pose  3.0)
+                        ?costmap)))

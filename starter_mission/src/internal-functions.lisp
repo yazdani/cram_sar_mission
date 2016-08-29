@@ -38,32 +38,39 @@
         (elem NIL)
         (property NIL)
         (caltmp NIL)
+        (tmp NIL)(tmp1 NIL)
         (sequences '()))
-  ;;  (format t "seqs: ~a~%" seqs)
     (dotimes (index (length seqs))
        (cond((string-equal (split-action (nth index seqs)) "move")
              (setf caltmp (one-desig-move (nth index seqs) elem property))
              (setf elem (first caltmp))
              (setf property (second caltmp))
-         ;;    (format t "what is caltmp ~a~%"caltmp)
+             (setf tmp (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))
              (setf desig (list (split-action (nth index seqs))
-                               (reference-by-human-frame (third caltmp)
-                                                         (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))
-                               (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs)))))
-          ;;   (format t "FINITIPwhat is caltmp ~a~%"caltmp)
-
-             )
+                               (reference-by-human-frame (third caltmp) tmp)
+                                                   (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))))
             ((string-equal (split-action (nth index seqs)) "take")
+             (format t "elem ~a~%" elem)
              (if (= index (- (length seqs) 1))
-                 (if (string-equal "NIL" (split-object (nth index seqs)))
-                     (setf desig  (list (list "take" NIL NIL)))
-                     (setf desig (list (list
-                                  (split-action (nth index seqs))
-                                   (reference-by-human-frame (one-desig-take (nth index seqs) elem property)
-                                                         (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))
-                                   (get-value-basedon-type->get-objects-infrontof-human
-                                    (split-object (nth index seqs)))))))
-                 (setf desig (multiple-desig-take index seqs elem property)))
+                 (cond((string-equal "NIL" (split-object (nth index seqs)))
+                     (setf desig  (list (list "take" NIL NIL))))
+                      (t 
+                         (setf tmp (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))
+                       
+                         (setf tmp1 (one-desig-take (nth index seqs) elem property))
+                      (format t "tmp1 is ~a~%" tmp1)
+                       (setf desig (list (list
+                                            (split-action (nth index seqs))
+                                            (reference-by-human-frame tmp1
+                                                                      tmp)
+                                            (get-value-basedon-type->get-objects-infrontof-human
+                                    (split-object (nth index seqs))))))))
+                 (setf desig (list (list (split-action (nth index seqs))
+                                          (reference-by-human-frame (multiple-desig-take index seqs elem property)
+                                         (get-value-basedon-type->get-objects-infrontof-human (split-object (nth (+ index 1) seqs))))
+                                 (get-value-basedon-type->get-objects-infrontof-human (split-object (nth (+ index 1) seqs)))        
+                                       ))))
+      
              (dotimes (jindex (length desig))
                (setf sequences (cons (nth jindex desig) sequences)))
              (return))
@@ -128,7 +135,6 @@
                (plusp (cl-transforms:x (cl-transforms:origin obj-pose))))
                (setf poses (append (list (format NIL"~a:~a" (nth index liste) dist)) poses))))
        poses))
-
 ;; Based on the given obj, we are calculating
 ;; all those objects which are of a specific
 ;; type
@@ -142,6 +148,7 @@
           (liste NIL))
   ;;    (format t " get-specific-elements-close-to-objec2t ~%")
     (dotimes (index (length sem-keys))
+    ;;  (format t "~a~%"(nth index sem-keys))
           (setf liste (cons (nth index sem-keys) liste)))
     (dotimes (index (length liste))
       (setf obj-pose (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* (format NIL "~a_link" obj) (format NIL "~a_link" (nth index liste)))))
@@ -179,11 +186,13 @@
                 (setf type (slot-value (gethash name new-hash)
                                        'cram-semantic-map-utils::type))
                 (if (or
-		     (string-equal type "bigtree")
-		     (string-equal type "biggesttree")
-		     (string-equal type "smalltree")
-		     (string-equal type "smallbigtree"))
+                     (string-equal type "bigtree")
+                     (string-equal type "biggesttree")
+                     (string-equal type "smalltree")
+                     (string-equal type "smallbigtree"))
                     (setf type "tree"))
+                (if  (string-equal type "hugerock")
+                     (setf type "rock"))
 		(if (or
 		     (string-equal type "brokepylon")
 		     (string-equal type "bluepylon")
@@ -194,28 +203,29 @@
    type))
 
 (defun reference-by-human-frame (desig objname)
- ;; (format t "objname ~a~%" objname)
+
   (let*((result NIL)
         (cam (cam-depth-tf-transform))
         (temp NIL)
         (tmp NIL)
         (tom NIL))
- ;;   (format t "frame is ~a~%" desig)
+    (setf cram-tf:*fixed-frame* "human")
     (cond((not(equal NIL desig))
           (setf result (reference desig))
           (if (equal *puby* NIL)
               ()
               (remove-local-tf-publisher *puby*))
-                  ;;  (format t "TeeeeOOOM is ~a~%" (get-human-elem-pose objname))
+                   
           (setf temp (look-at-object-x (cl-transforms:make-pose (cl-transforms:origin (cl-transforms-stamped:pose-stamped->pose result)) (cl-transforms:orientation (cl-transforms:transform->pose cam)))  (get-human-elem-pose objname)))
-           ;;  (format t "TeeeeOOOM is ~a~%" temp)
+
           (setf tmp (cl-transforms-stamped:make-pose-stamped "human"
                                                              0.0 (cl-transforms:origin temp)
                                                              (cl-transforms:orientation temp)))
-        ;;  (format t "TOOOM is ~a~%" tmp)
+
           (setf tom (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose tmp :target-frame "map")))
         (setf *puby* (create-local-tf-publisher tom "test")))
          (t ()))
+
     tom))
 
 (defun cam-depth-tf-transform ()
@@ -327,7 +337,14 @@ quadrotor, so the rotation is on x-axis"
     (dotimes (index (length liste))
       (cond ((<= (parse-integer (second (split-sequence:split-sequence #\: (nth index liste)))) checker)
              (setf checker (parse-integer (second (split-sequence:split-sequence #\: (nth index liste)))))
-             (setf elem (first (split-sequence:split-sequence #\: (nth index liste)))))))
+             (setf elem(nth index liste)))))
     elem))
 
            
+(defun reset-map-frame ()
+  (setf cram-tf:*fixed-frame* "map")
+  cram-tf:*fixed-frame*)
+
+(defun set-map-frame ()
+  (setf cram-tf:*fixed-frame* "human")
+  cram-tf:*fixed-frame*)
