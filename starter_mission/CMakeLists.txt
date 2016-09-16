@@ -195,3 +195,5 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+add_lisp_executable(start_reasoning_service
+starter-mission starter-mission::start_reasoning_service)

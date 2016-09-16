@@ -53,6 +53,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    protocol_dialogue.msg
+   cram_msg_type.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -60,6 +61,7 @@ add_service_files(
    FILES
    text_parser.srv
    cram_reason.srv
+   call_cmd.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -70,7 +72,7 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
+generate_messages(
    DEPENDENCIES
   geometry_msgs   std_msgs
  )
@@ -155,7 +157,13 @@ add_executable(cmd_to_points nodes_cpp/cmd_to_points.cpp)
 target_link_libraries(cmd_to_points ${catkin_LIBRARIES})
 add_dependencies(cmd_to_points instructor_mission_gencpp)
 
+#add_executable(send_cmd nodes_cpp/send_cmd.cpp)
+#target_link_libraries(send_cmd ${catkin_LIBRARIES})
+#add_dependencies(send_cmd instructor_mission_gencpp)
 
+add_executable(main_server nodes_cpp/main_server.cpp)
+target_link_libraries(main_server ${catkin_LIBRARIES})
+add_dependencies(main_server instructor_mission_gencpp)
 #############
 ## Install ##
 #############

@@ -38,9 +38,12 @@
                cram-bullet-reasoning-belief-state
                cram-plan-library
                cram-bullet-reasoning-designators
-	       cl-tf
+               cl-tf
                cram-semantic-map-designators
-	       instructor_mission-srv
+               instructor_mission-srv
+               quadrotor_controller-srv
+               img_mission-srv
+               instructor_mission-msg
                alexandria)
   :components
   ((:module "src"

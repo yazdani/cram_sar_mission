@@ -110,6 +110,7 @@ string without_brakets(string value)
       if(testing.size() == 1)
 	{
 	  boost::replace_all(cmds[sup],"picture)","picture,nil,nil)");
+          boost::replace_all(cmds[sup],"image)","picture,nil,nil)");
 	  boost::replace_all(cmds[sup],"right)","right,nil,nil)");
 	  boost::replace_all(cmds[sup],"left)","left,nil,nil)");
 	  boost::replace_all(cmds[sup],"ahead)","ahead,nil,nil)");

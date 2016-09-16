@@ -32,84 +32,187 @@
 ;; This function is checking if the instructions are
 ;; based on 'take' and 'move' actions and is forwarding
 ;; them to the correct function calls
+;; It returns a list of (action location objname)
 (defun parsing-instruction (cmd)
   (let*((seqs (split-sequence:split-sequence #\; cmd))
         (desig NIL)
         (elem NIL)
         (property NIL)
-        (caltmp NIL)
-        (tmp NIL)(tmp1 NIL)
+        (tmp-desig NIL)(tmp-liste NIL)(tmp-value NIL)
         (sequences '()))
     (dotimes (index (length seqs))
-       (cond((string-equal (split-action (nth index seqs)) "move")
-             (setf caltmp (one-desig-move (nth index seqs) elem property))
-             (setf elem (first caltmp))
-             (setf property (second caltmp))
-             (setf tmp (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))
-             (setf desig (list (split-action (nth index seqs))
-                               (reference-by-human-frame (third caltmp) tmp)
-                                                   (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))))
-            ((string-equal (split-action (nth index seqs)) "take")
-             (format t "elem ~a~%" elem)
-             (if (= index (- (length seqs) 1))
-                 (cond((string-equal "NIL" (split-object (nth index seqs)))
+       (cond((string-equal (split-action (nth index seqs)) "show")
+             (setf desig (list "show" NIL NIL)))                         
+            ((string-equal (split-action (nth index seqs)) "move")
+             (setf tmp-liste (car (multiple-desig-move index seqs elem property)))
+             (setf elem (second tmp-liste))
+             (setf property (third tmp-liste))
+             (setf tmp-desig (first tmp-liste))
+             (setf desig (list "move"
+                           (reference-by-human-frame tmp-desig elem)
+                                              elem)))           
+            ((and (string-equal (split-action (nth index seqs)) "take")
+                  (not (= index (- (length seqs) 1)))
+                  (string-equal "show" (split-action (nth (+ index 1) seqs))))
+                (setf desig (list "take" NIL NIL)))
+                 ((string-equal (split-action (nth index seqs)) "take")
+             (cond ((= index (- (length seqs) 1)) ;;if there exist just one take
+    
+                 (cond((string-equal "NIL" (split-object (nth index seqs))) ;;if (take, NIL, NIL)
                      (setf desig  (list (list "take" NIL NIL))))
-                      (t 
-                         (setf tmp (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))
-                       
-                         (setf tmp1 (one-desig-take (nth index seqs) elem property))
-                      (format t "tmp1 is ~a~%" tmp1)
+                      ((string-equal elem NIL) ;; if prev elem==NIL
+                       (setf tmp-value (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index seqs))))
+                       (setf tmp-desig (one-desig-take (nth index seqs) elem property))
                        (setf desig (list (list
-                                            (split-action (nth index seqs))
-                                            (reference-by-human-frame tmp1
-                                                                      tmp)
-                                            (get-value-basedon-type->get-objects-infrontof-human
-                                    (split-object (nth index seqs))))))))
+                                          "take"
+                                           (reference-by-human-frame tmp-desig
+                                                                    tmp-value)
+                                          (get-value-basedon-type->get-objects-infrontof-human
+                                    (split-object (nth index seqs)))))))
+                      (t (setf tmp-value (get-obj-located-obj-with-depend-property elem (split-object (nth index seqs)) property))
+                       (setf tmp-desig (make-designator :location `((:to ,tmp-value))))                         
+                       (setf desig (list (list
+                                          "take"
+                                           (reference-by-human-frame tmp-desig tmp-value) 
+                                             tmp-desig))))))
+                   (t 
+                    (setf tmp-desig (multiple-desig-take index seqs elem property))
+                    (setf tmp-value (get-value-basedon-type->get-objects-infrontof-human (split-object (nth (+ index 1) seqs))))
                  (setf desig (list (list (split-action (nth index seqs))
-                                          (reference-by-human-frame (multiple-desig-take index seqs elem property)
-                                         (get-value-basedon-type->get-objects-infrontof-human (split-object (nth (+ index 1) seqs))))
-                                 (get-value-basedon-type->get-objects-infrontof-human (split-object (nth (+ index 1) seqs)))        
-                                       ))))
-      
+                                          (reference-by-human-frame tmp-desig
+                                                                    tmp-value)
+                                          (get-obj-located-obj-with-depend-property elem (split-object (nth (+ index 1) seqs)) property)      
+                                       )))))
              (dotimes (jindex (length desig))
                (setf sequences (cons (nth jindex desig) sequences)))
              (return))
             (t (setf property NIL)
                (setf desig NIL)
                (setf elem NIL)))
+     
       (setf sequences (cons desig sequences)))
    (reverse sequences)))
 
 
-(defun function-move ())
+(defun parser-instruction (seqs)
+ (let*((cmd (split-sequence:split-sequence #\; seqs))
+       (elem NIL)
+       (action NIL)
+       (all NIL)
+       (referenced-desig NIL)
+       (designator-list NIL)
+       (property NIL))
+   (dotimes (index (length cmd))
+     (cond ((string-equal "take" (split-action (nth index cmd)))
+            (setf all (take-sequence cmd index elem property designator-list))
+            (setf designator-list (first all))
+            (setf elem (second all))
+            (setf action (fourth all))
+            (setf property (third all)))
+           ((string-equal "move" (split-action (nth index cmd)))
+            (setf all (move-sequence cmd index elem property designator-list))
+            (setf designator-list (first all))
+            (setf elem (second all))
+            (setf action (fourth all))
+            (setf property (third all)))
+           ((string-equal "show" (split-action (nth index cmd)))
+            (setf action "show"))))
+   (if (not(equal designator-list NIL))      
+       (setf referenced-desig (reference-by-human-frame designator-list elem)))
+   (list action referenced-desig)))   
 
-(defun use-cases-by-take (index seqs)
-  (let*((tmp '()))
-  (loop for jindex from index to (- (length seqs) 1)
-        do(setf tmp (cons (list (nth jindex seqs)) tmp)))
-    (reverse tmp)))
+(defun move-sequence (action-list index elem property desig-list)
+  (let ((compute-gesture NIL)
+        (desig NIL))
+    (cond((= 1 (length action-list)) ;;If action-list includes one action
+          (if (string-equal (split-property (first action-list)) "pointed_at")
+              (setf compute-gesture NIL) ;;TODO: Calculating pointing gesture
+              (setf compute-gesture (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index action-list)))));;Otherwiese: Calculating all then objects in-front-of humans
+          (setf property (split-spatial-relation (nth index action-list)))
+          (setf elem compute-gesture)
+          (setf desig-list (list (make-designator :location `((,(direction-symbol (split-spatial-relation (nth index action-list))) ,elem))) elem property "move"))) ;;(designator, desig-props, element, property)
+         (t (cond((equal elem NIL) ;;If elem is nill, happens when asking the first elem of list
+                   (if (string-equal (split-property (nth index action-list)) "pointed_at")
+                       (setf elem NIL) ;;TODO: Calculating pointing gesture
+                       (setf elem (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index action-list)))));;Otherwiese: Calculating all then objects in-front-of humans
+                  (setf property (split-spatial-relation (nth index action-list)))
+                  (setf desig-list (list (make-designator :location`((,(direction-symbol property) ,elem))) elem property "move")))
+                 (t
+                  (if (string-equal (split-property (nth index action-list)) "pointed_at")
+                       (setf elem NIL) ;;TODO: Calculating pointing gesture
+                       (setf elem (get-obj-located-obj-with-depend-property elem (split-object (nth index action-list)) property)))
+                  (setf property (split-spatial-relation (nth index action-list)))
+                  (setf desig (append (desig:properties desig-list) (list (list (direction-symbol property) elem))))
+                  (setf desig-list (list (make-designator :location desig) elem property "move"))))))
+    desig-list))
+          
+(defun take-sequence (action-list index elem property desig-list)
+  (let ((compute-gesture NIL)
+        (desig NIL))
+    (cond((= 1 (length action-list)) ;;take(pic NIL NIL) or take(pic NIL tree) or take(pic pointed tree)
+          (cond((string-equal "NIL" (split-object (nth index action-list)))
+                (setf desig-list (list (list desig-list elem property "take"))))
+               (t
+                (if (string-equal (split-property (first action-list)) "pointed_at")
+                    (setf compute-gesture NIL) ;;TODO: Calculating pointing gesture
+                    (setf compute-gesture (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index action-list))))) 
+                (setf elem compute-gesture)
+                (setf desig-list (list (make-designator :location `((:to ,elem))) elem property "take")))))
+         (t ;;take(pic NIL NIL):+ or +;take(pic NIL NIL) or +;take(pic NIL tree) or take(pic NIL tree);+ or take(pic pointed tree);+ etc.
+          (cond((equal NIL elem) ;; take(pic NIL NIL):++++
+                (cond((string-equal "NIL" (split-object (nth index action-list))) ;;take(pic NIL NIL);++++
+                      (setf desig-list (list desig-list elem property "take")))
+                     (t ;;take(pic pointed/NIL tree);++++
+                      (if (string-equal (split-property (first action-list)) "pointed_at")
+                          (setf compute-gesture NIL)
+                          (setf compute-gesture (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index action-list)))))
+                      (setf elem compute-gesture)
+                      (cond((and (string-equal (split-spatial-relation (nth index action-list)) "picture")
+                                 (not (string-equal (split-spatial-relation (nth index action-list)) "NIL")))
+                            (setf desig (list (list (direction-symbol "to") elem)))
+                            (setf property "to")
+                            (setf desig-list (list (make-designator :location desig) elem property "take")))
+                           ((and (string-equal (split-spatial-relation (nth index action-list)) "picture")
+                                (string-equal (split-spatial-relation (nth index action-list)) "NIL"))
+                            (setf desig-list (list desig-list NIL NIL "take")))
+                           (t
+                             (setf property (split-spatial-relation (nth index action-list)))
+                             (cond((equal desig-list NIL)
+                                   (setf desig-list (list  (make-designator :location `((,(direction-symbol property) ,elem))) elem property "take")))
+                                  (t
+                                   (setf desig (append (desig:properties desig-list) (list (list (direction-symbol property) elem))))
+                                   (setf desig-list (list (make-designator :location desig) elem property "take"))))
+                                 )))))
+               (t ;;++++;take(pic pointed/NIL NIL) or ++++;take(right pointed/NIL tree
+                   (cond((string-equal "picture" (split-spatial-relation (nth index action-list)))
+                      (if (string-equal (split-property (first action-list)) "pointed_at")
+                          (setf elem NIL)
+                          (if(not (string-equal "NIL" (split-object (nth index action-list))))
+                             (if (not (string-equal (split-object (nth index action-list)) (get-elem-type elem)))
+                                 (setf elem (get-obj-located-obj-with-depend-property elem (split-object (nth index action-list)) property)))
+                             (setf desig "test")))
+                         (setf property "to")
+                      (if (string-equal desig "test")
+                          (setf desig (desig:properties desig-list))
+                          (setf desig (append (desig:properties desig-list) (list (list (direction-symbol property) elem)))))
+                      (setf desig-list (list (make-designator :location desig) elem property "take")))
+                     (t ;;++++;take(right pointed/NIL tree
+                      (if (string-equal (split-property (first action-list)) "pointed_at")
+                          (setf elem NIL)
+                          (if (string-equal (split-object (nth index action-list)) (get-elem-type elem))
+                              (setf elem elem)
+                              (setf elem (get-obj-located-obj-with-depend-property elem (split-object (nth index action-list)) property))))
+                      (setf property  (split-spatial-relation (nth index action-list)))
+                      (setf desig (append (desig:properties desig-list) (list (list (direction-symbol property) elem))))
+                      (setf desig-list (list (make-designator :location desig) elem property "take"))))))))
+         desig-list))
 
-  
-                  
-    ;;         (format t "ennnnnnd ~a~%" (split-action (nth index seqs)))
-    ;;         (setf desig (reference-by-human-frame (one-desig-take (nth index seqs))
-    ;;                                               (get-type-by-listobject-infrontof-human
-    ;;                                                (split-object (nth index seqs)))))
-    ;;         (setf action (split-action (nth index seqs)))
-    ;;         (setf elem (get-type-by-listobject-infrontof-human (split-object (nth index seqs)))))
-    ;;        (t (setf action NIL)
-    ;;           (setf desig NIL)
-    ;;           (setf elem NIL)))
-    ;;   (setf sequences (cons (list action desig elem) sequences)))
-    ;; (reverse sequences)))
 
-
-                  
 (defun get-objects-infrontof-human ()
-(let*((liste '())
+(let((liste '())
       (sem-map (sem-map-utils:get-semantic-map))
       (aliste '()))
-  (dotimes (index 60)
+  (dotimes (index 80)
     (if (>= 30 (length liste))
         (setf liste (get-elements-infrontof-human-with-distance index)) 
         (return)))
@@ -121,6 +224,8 @@
          (sem-keys (hash-table-keys sem-hash))
          (poses '()) (dist NIL) (liste '())
          (pub NIL)(obj-pub NIL)(obj-pose NIL) (obj-map NIL)(obj-pose2))
+  ;;  (dotimes (index (length sem-keys))
+  ;;    (format t "map ~a und ~a~%" (get-distance (tf-human-to-map) (get-elem-pose (nth index sem-keys))) (nth index sem-keys)))
     (dotimes (index (length sem-keys))
       (if (or (string-equal (nth index sem-keys) "human01")
               (string-equal (nth index sem-keys)  "human02")
@@ -135,6 +240,7 @@
                (plusp (cl-transforms:x (cl-transforms:origin obj-pose))))
                (setf poses (append (list (format NIL"~a:~a" (nth index liste) dist)) poses))))
        poses))
+
 ;; Based on the given obj, we are calculating
 ;; all those objects which are of a specific
 ;; type
@@ -203,7 +309,7 @@
    type))
 
 (defun reference-by-human-frame (desig objname)
-
+;;(format t " und ~a und ~a~%" desig objname)
   (let*((result NIL)
         (cam (cam-depth-tf-transform))
         (temp NIL)
@@ -308,6 +414,11 @@ quadrotor, so the rotation is on x-axis"
                       (cl-transforms:y (cl-transforms:origin obj2-pose)))))
         ((string-equal property "close-to")
          (if (>= 4 (get-distance obj1-pose obj2-pose))
+             (setf tmp T)
+             (setf tmp NIL)))
+        ((or (string-equal property "to")
+              (string-equal property "around"))
+         (if (>= 20 (get-distance obj1-pose obj2-pose))
              (setf tmp T)
              (setf tmp NIL))))
     tmp))

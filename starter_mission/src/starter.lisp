@@ -27,7 +27,7 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :starter-mission)
-
+(defvar *value* "value")
 (defun start-my-ros ()
   (roslisp-utilities:startup-ros))
 
@@ -42,10 +42,69 @@
   (roslisp:ros-info (basics-system) "start reasoning service")
  (roslisp:spin-until nil 1000))
 
-(roslisp:def-service-callback instructor_mission-srv:cram_reason (cmd)
-  (let*((liste (parsing-instruction cmd)))
-  (roslisp:make-response :objects liste)))
+;; (roslisp:def-service-callback instructor_mission-srv:cram_reason (cmd x y z)
+;;   (let((liste (parsing-instruction cmd))
+;;        (value NIL)(pose NIL))
+;;     (dotimes (index (length liste))
+;;       (cond((string-equal "move" (first (nth index liste)))
+;;             (setf pose (second (nth index liste)))
+;;             (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
+;;                                                (cl-transforms:y (cl-transforms:origin pose))
+;;                                                (cl-transforms:z (cl-transforms:origin pose))
+;;                                                (cl-transforms:x (cl-transforms:orientation pose))
+;;                                                (cl-transforms:y (cl-transforms:orientation pose))
+;;                                                (cl-transforms:z (cl-transforms:orientation pose))
+;;                                                (cl-transforms:w (cl-transforms:orientation pose)))))
+;;            ((and (string-equal "take" (first (nth index liste)))
+;;                  (equal NIL (second (nth index liste))))
+;;             (setf *value* (forward-takecmd-to-gazebo "go")))
+;;            ((and (string-equal "take" (first (nth index liste)))
+;;                  (not (equal NIL (second (nth index liste)))))
+;;             (setf pose (second (nth index liste)))
+;;             (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
+;;                                                (cl-transforms:y (cl-transforms:origin pose))
+;;                                                (cl-transforms:z (cl-transforms:origin pose))
+;;                                                (cl-transforms:x (cl-transforms:orientation pose))
+;;                                                (cl-transforms:y (cl-transforms:orientation pose))
+;;                                                (cl-transforms:z (cl-transforms:orientation pose))
+;;                                                (cl-transforms:w (cl-transforms:orientation pose))))
+;;             (setf *value* (forward-takecmd-to-gazebo "go")))
+;;            (t (roslisp:wait-duration 2)
+;;             (setf value (forward-showcmd-to-gazebo *value*)))))
+;;     ;;TODO: CALL THE SERVICE WITH A CLIENT
+;;     (roslisp:make-response :result "Done!")))
 
+(roslisp:def-service-callback instructor_mission-srv:cram_reason (cmd x y z)
+  (let((liste (parser-instruction cmd))
+       (value NIL)(pose NIL))
+    (format t "parser-instruction is ~a~%" liste)
+      (cond((string-equal "move" (first liste))
+            (setf pose (second liste))
+            (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
+                                               (cl-transforms:y (cl-transforms:origin pose))
+                                               (cl-transforms:z (cl-transforms:origin pose))
+                                               (cl-transforms:x (cl-transforms:orientation pose))
+                                               (cl-transforms:y (cl-transforms:orientation pose))
+                                               (cl-transforms:z (cl-transforms:orientation pose))
+                                               (cl-transforms:w (cl-transforms:orientation pose)))))
+           ((and (string-equal "take" (first liste))
+                 (equal NIL (second liste)))
+            (setf *value* (forward-takecmd-to-gazebo "go")))
+           ((and (string-equal "take" (first liste))
+                 (not (equal NIL (second liste))))
+            (setf pose (second liste))
+            (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
+                                               (cl-transforms:y (cl-transforms:origin pose))
+                                               (cl-transforms:z (cl-transforms:origin pose))
+                                               (cl-transforms:x (cl-transforms:orientation pose))
+                                               (cl-transforms:y (cl-transforms:orientation pose))
+                                               (cl-transforms:z (cl-transforms:orientation pose))
+                                               (cl-transforms:w (cl-transforms:orientation pose))))
+            (setf *value* (forward-takecmd-to-gazebo "go")))
+           (t (roslisp:wait-duration 2)
+            (setf value (forward-showcmd-to-gazebo *value*)))))
+    ;;TODO: CALL THE SERVICE WITH A CLIENT
+    (roslisp:make-response :result "Done!"))
 
 (defun starter-mission ()
   (let*((desig (make-designator :location `((:left-of "bigtree03")))))
@@ -85,3 +144,37 @@
 (defun get-human-elem-pose (object-name)
  (setf cram-tf:*fixed-frame* "human")
   (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* "human" (format NIL "~a_link" object-name))))
+
+;;client-service to gazebo: move quadrotor
+(defun forward-movecmd-to-gazebo (x y z qx qy qz qw)
+ ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
+    (if (roslisp:wait-for-service "setRobotPoints" 10)
+        (format t "~a~%" (roslisp:call-service "setRobotPoints"
+                                               'quadrotor_controller-srv::cmd_points
+                                               :x x
+                                               :y y
+                                               :z z
+                                               :qx qx
+                                               :qy qy
+                                               :qz qz
+                                               :qw qw))))
+
+;;client-service to gazebo:take-picture quadrotor
+(defun forward-takecmd-to-gazebo (tmp)
+ ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
+  (let((value NIL))
+    (if (roslisp:wait-for-service "store_image" 10)
+        (setf value (img_mission-srv:result (roslisp:call-service "store_image"
+                                                                  'img_mission-srv::returnString
+                                                                  :goal tmp))))
+    value))
+
+;;client-service to gazebo:take-picture quadrotor
+(defun forward-showcmd-to-gazebo (tmp)
+ ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
+  (let((value NIL))
+    (if (roslisp:wait-for-service "show_image" 10)
+        (setf value (img_mission-srv:result (roslisp:call-service "show_image"
+                                                                  'img_mission-srv::returnString
+                                                                  :goal tmp))))
+    value))
