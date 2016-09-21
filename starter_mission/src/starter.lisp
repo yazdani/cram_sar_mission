@@ -75,6 +75,7 @@
 ;;     (roslisp:make-response :result "Done!")))
 
 (roslisp:def-service-callback instructor_mission-srv:cram_reason (cmd x y z)
+  (format t "cmd ~a~%" cmd)
   (let((liste (parser-instruction cmd))
        (value NIL)(pose NIL))
     (format t "parser-instruction is ~a~%" liste)

@@ -105,6 +105,7 @@
    (dotimes (index (length cmd))
      (cond ((string-equal "take" (split-action (nth index cmd)))
             (setf all (take-sequence cmd index elem property designator-list))
+            (format t "all is ~a~%" all)
             (setf designator-list (first all))
             (setf elem (second all))
             (setf action (fourth all))
@@ -117,8 +118,11 @@
             (setf property (third all)))
            ((string-equal "show" (split-action (nth index cmd)))
             (setf action "show"))))
-   (if (not(equal designator-list NIL))      
-       (setf referenced-desig (reference-by-human-frame designator-list elem)))
+    (format t "~a jkdjkdjd~%"(type-of  designator-list))
+   (if (not (equal (type-of designator-list) 'cons))
+       (if (not(equal designator-list NIL))
+           (setf referenced-desig (reference-by-human-frame designator-list elem))))
+   (format t "end parser instruction ~%")
    (list action referenced-desig)))   
 
 (defun move-sequence (action-list index elem property desig-list)
@@ -144,14 +148,16 @@
                   (setf property (split-spatial-relation (nth index action-list)))
                   (setf desig (append (desig:properties desig-list) (list (list (direction-symbol property) elem))))
                   (setf desig-list (list (make-designator :location desig) elem property "move"))))))
+    (format t "desig-list ~a~%" desig-list)
     desig-list))
           
 (defun take-sequence (action-list index elem property desig-list)
+  (format t "take-sequence ~a~%" action-list)
   (let ((compute-gesture NIL)
         (desig NIL))
     (cond((= 1 (length action-list)) ;;take(pic NIL NIL) or take(pic NIL tree) or take(pic pointed tree)
           (cond((string-equal "NIL" (split-object (nth index action-list)))
-                (setf desig-list (list (list desig-list elem property "take"))))
+                (setf desig-list (list desig-list elem property "take")))
                (t
                 (if (string-equal (split-property (first action-list)) "pointed_at")
                     (setf compute-gesture NIL) ;;TODO: Calculating pointing gesture
@@ -192,6 +198,8 @@
                                  (setf elem (get-obj-located-obj-with-depend-property elem (split-object (nth index action-list)) property)))
                              (setf desig "test")))
                          (setf property "to")
+                         (format t "liste ~a~% ~a~% ~a~%"  (split-object (nth index action-list))
+                             (get-elem-type elem) property)    
                       (if (string-equal desig "test")
                           (setf desig (desig:properties desig-list))
                           (setf desig (append (desig:properties desig-list) (list (list (direction-symbol property) elem)))))
@@ -459,3 +467,56 @@ quadrotor, so the rotation is on x-axis"
 (defun set-map-frame ()
   (setf cram-tf:*fixed-frame* "human")
   cram-tf:*fixed-frame*)
+
+
+(defun correct-parsing (full-command)
+   (let*((sequences (split-sequence:split-sequence #\; full-command))
+         (element NIL)
+         (action NIL)
+         (referenced-designator NIL)
+         (designator-property-list NIL)
+         (spatial-relation NIL))
+   (dotimes (index (length sequences))
+     (format t "sequences ~a~%" (nth index sequences))
+     (cond ((string-equal "move" (split-action (nth index sequences)))
+            (format t "move entering~%")
+            (setf all (move-action sequences index element spatial-relation designator-property-list))
+            (format t "all is ~a~%" all))
+           ((string-equal "take" (split-action (nth index sequences)))
+            (format t "take entering~%"))
+           ((string-equal "show" (split-action (nth index sequences)))
+            (format t "show entering~%"))
+     ))
+  ))
+
+(defun move-action (action-list index elem property desig-list)
+   (let ((compute-gesture NIL)
+        (desig NIL))
+    (cond((= 1 (length action-list)) ;;If action-list includes one action
+          (if (string-equal (split-property (first action-list)) "pointed_at")
+              (setf compute-gesture NIL) ;;TODO: Calculating pointing gesture
+              (setf compute-gesture (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index action-list)))));;Otherwiese: Calculating all then objects in-front-of humans
+          (setf property (split-spatial-relation (nth index action-list)))
+          (setf elem compute-gesture)
+          (setf desig-list (list (make-designator :location `((,(direction-symbol (split-spatial-relation (nth index action-list))) ,elem))) elem property "move"))) ;;(designator, desig-props, element, property)
+         (t (cond((equal elem NIL) ;;If elem is nill, happens when asking the first elem of list
+                   (if (string-equal (split-property (nth index action-list)) "pointed_at")
+                       (setf elem NIL) ;;TODO: Calculating pointing gesture
+                       (setf elem (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index action-list)))));;Otherwise: Calculating all then objects in-front-of humans
+                  (setf property (split-spatial-relation (nth index action-list)))
+                  (setf desig-list (list (make-designator :location`((,(direction-symbol property) ,elem))) elem property "move")))
+                 (t
+                  (if (string-equal (split-property (nth index action-list)) "pointed_at")
+                       (setf elem NIL) ;;TODO: Calculating pointing gesture
+                       (setf elem (get-obj-located-obj-with-depend-property elem (split-object (nth index action-list)) property)))
+                  (setf property (split-spatial-relation (nth index action-list)))
+                  (setf desig (append (desig:properties desig-list) (list (list (direction-symbol property) elem))))
+                  (setf desig-list (list (make-designator :location desig) elem property "move"))))))
+    (format t "desig-list ~a~%" desig-list)
+    desig-list))
+
+(defun take-action (sequences index element spatial-relation designator-property-list)
+  )
+
+(defun show-action (sequences index element spatial-relation designator-property-list)
+  )
