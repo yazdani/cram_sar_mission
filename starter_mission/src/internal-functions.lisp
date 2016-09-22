@@ -473,6 +473,7 @@ quadrotor, so the rotation is on x-axis"
    (let*((sequences (split-sequence:split-sequence #\; full-command))
          (element NIL)
          (action NIL)
+         (all NIL)
          (referenced-designator NIL)
          (designator-property-list NIL)
          (spatial-relation NIL))
@@ -480,40 +481,26 @@ quadrotor, so the rotation is on x-axis"
      (format t "sequences ~a~%" (nth index sequences))
      (cond ((string-equal "move" (split-action (nth index sequences)))
             (format t "move entering~%")
-            (setf all (move-action sequences index element spatial-relation designator-property-list))
+            (setf all (move-action (nth index sequences) designator-property-list))
+            (setf designator-property-list (third all))
             (format t "all is ~a~%" all))
            ((string-equal "take" (split-action (nth index sequences)))
             (format t "take entering~%"))
            ((string-equal "show" (split-action (nth index sequences)))
             (format t "show entering~%"))
      ))
+     
   ))
 
-(defun move-action (action-list index elem property desig-list)
-   (let ((compute-gesture NIL)
-        (desig NIL))
-    (cond((= 1 (length action-list)) ;;If action-list includes one action
-          (if (string-equal (split-property (first action-list)) "pointed_at")
-              (setf compute-gesture NIL) ;;TODO: Calculating pointing gesture
-              (setf compute-gesture (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index action-list)))));;Otherwiese: Calculating all then objects in-front-of humans
-          (setf property (split-spatial-relation (nth index action-list)))
-          (setf elem compute-gesture)
-          (setf desig-list (list (make-designator :location `((,(direction-symbol (split-spatial-relation (nth index action-list))) ,elem))) elem property "move"))) ;;(designator, desig-props, element, property)
-         (t (cond((equal elem NIL) ;;If elem is nill, happens when asking the first elem of list
-                   (if (string-equal (split-property (nth index action-list)) "pointed_at")
-                       (setf elem NIL) ;;TODO: Calculating pointing gesture
-                       (setf elem (get-value-basedon-type->get-objects-infrontof-human (split-object (nth index action-list)))));;Otherwise: Calculating all then objects in-front-of humans
-                  (setf property (split-spatial-relation (nth index action-list)))
-                  (setf desig-list (list (make-designator :location`((,(direction-symbol property) ,elem))) elem property "move")))
-                 (t
-                  (if (string-equal (split-property (nth index action-list)) "pointed_at")
-                       (setf elem NIL) ;;TODO: Calculating pointing gesture
-                       (setf elem (get-obj-located-obj-with-depend-property elem (split-object (nth index action-list)) property)))
-                  (setf property (split-spatial-relation (nth index action-list)))
-                  (setf desig (append (desig:properties desig-list) (list (list (direction-symbol property) elem))))
-                  (setf desig-list (list (make-designator :location desig) elem property "move"))))))
-    (format t "desig-list ~a~%" desig-list)
-    desig-list))
+(defun move-action (action-list desig-list)
+  (let((action (split-action action-list))
+       (spatial-property (split-spatial-relation action-list))
+       (element (split-object action-list))
+       (desig-prop-list NIL))
+    (if(not(equal desig-list NIL))
+       (setf desig-prop-list (append (list (list (direction-symbol spatial-property) element))  desig-list))
+       (setf desig-prop-list (list (list (direction-symbol spatial-property) element))))
+    (list  action (make-designator :location desig-prop-list) desig-prop-list)))
 
 (defun take-action (sequences index element spatial-relation designator-property-list)
   )
