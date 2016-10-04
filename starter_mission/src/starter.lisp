@@ -47,7 +47,7 @@
    (let((*vec-chain* (cl-transforms:make-3d-vector x y z))
         (liste (correct-parsing cmd))
         (value NIL)(pose NIL)
-        (newliste NIL))
+        (newliste NIL) (rotation-cmd NIL))
      (cond ((not (equal NIL (second liste)))
             (setf newliste (designator-filled-with-values (second liste)))               
                (setf pose (reference-by-human-frame newliste (second (first (last (desig:properties newliste)))))))
@@ -59,7 +59,32 @@
                                                      (cl-transforms:x (cl-transforms:orientation pose))
                                                      (cl-transforms:y (cl-transforms:orientation pose))
                                                      (cl-transforms:z (cl-transforms:orientation pose))
-                                                     (cl-transforms:w (cl-transforms:orientation pose)))))
+                                                     (cl-transforms:w (cl-transforms:orientation pose))))
+              (let((quad-pose NIL)
+                   (new-quad-pose NIL)
+                   (lisp-pose NIL))
+                   (setf quad-pose (gazebo_msgs-srv:pose (roslisp:call-service "gazebo/get_model_state"
+                                                               'gazebo_msgs-srv::GetModelState
+                                                               :model_name "quadrotor"
+                                                               :relative_entity_name "")))
+                (setf lisp-pose (cl-transforms:make-pose (cl-transforms:make-3d-vector
+                                                          (geometry_msgs-msg:x
+                                                           (geometry_msgs-msg:position quad-pose))
+                                                          (geometry_msgs-msg:y
+                                                           (geometry_msgs-msg:position quad-pose))
+                                                          (geometry_msgs-msg:z
+                                                           (geometry_msgs-msg:position quad-pose)))
+                                                         (cl-transforms:make-quaternion
+                                                          (geometry_msgs-msg:x
+                                                           (geometry_msgs-msg:orientation quad-pose))
+                                                          (geometry_msgs-msg:y
+                                                           (geometry_msgs-msg:orientation quad-pose))
+                                                          (geometry_msgs-msg:z
+                                                           (geometry_msgs-msg:orientation quad-pose))
+                                                          (geometry_msgs-msg:w
+                                                           (geometry_msgs-msg:orientation quad-pose)))))
+                (setf new-quad-pose (look-at-object-x lisp-pose *obj-pose*))
+                (setf rotation-cmd (forward-rotatecmd-to-gazebo new-quad-pose))))
             ((and (string-equal "take" (first liste))
                   (equal NIL pose))
              (setf *value* (forward-takecmd-to-gazebo "go")))
@@ -72,6 +97,31 @@
                                                     (cl-transforms:y (cl-transforms:orientation pose))
                                                     (cl-transforms:z (cl-transforms:orientation pose))
                                                     (cl-transforms:w (cl-transforms:orientation pose))))
+             (let((quad-pose NIL)
+                   (new-quad-pose NIL)
+                   (lisp-pose NIL))
+                   (setf quad-pose (gazebo_msgs-srv:pose (roslisp:call-service "gazebo/get_model_state"
+                                                               'gazebo_msgs-srv::GetModelState
+                                                               :model_name "quadrotor"
+                                                               :relative_entity_name "")))
+                (setf lisp-pose (cl-transforms:make-pose (cl-transforms:make-3d-vector
+                                                          (geometry_msgs-msg:x
+                                                           (geometry_msgs-msg:position quad-pose))
+                                                          (geometry_msgs-msg:y
+                                                           (geometry_msgs-msg:position quad-pose))
+                                                          (geometry_msgs-msg:z
+                                                           (geometry_msgs-msg:position quad-pose)))
+                                                         (cl-transforms:make-quaternion
+                                                          (geometry_msgs-msg:x
+                                                           (geometry_msgs-msg:orientation quad-pose))
+                                                          (geometry_msgs-msg:y
+                                                           (geometry_msgs-msg:orientation quad-pose))
+                                                          (geometry_msgs-msg:z
+                                                           (geometry_msgs-msg:orientation quad-pose))
+                                                          (geometry_msgs-msg:w
+                                                           (geometry_msgs-msg:orientation quad-pose)))))
+                (setf new-quad-pose (look-at-object-x lisp-pose *obj-pose*))
+                (setf rotation-cmd (forward-rotatecmd-to-gazebo new-quad-pose)))
              (roslisp:wait-duration 2)
              (setf *value* (forward-takecmd-to-gazebo "go")))
             ((and (string-equal "show" (first liste))
@@ -151,6 +201,31 @@
                                                :qy qy
                                                :qz qz
                                                :qw qw))))
+
+
+
+;;client-service to gazebo: move quadrotor
+(defun forward-rotatecmd-to-gazebo (pose)
+ ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
+(let* ((vec (cl-transforms:origin pose))
+      (quat (cl-transforms:orientation pose))
+      (x (cl-transforms:x vec))
+      (y (cl-transforms:y vec))
+      (z (cl-transforms:z vec))
+      (qx (cl-transforms:x quat))
+      (qy (cl-transforms:y quat))
+      (qz (cl-transforms:z quat))
+      (qw (cl-transforms:w quat)))
+(if (roslisp:wait-for-service "setRobotRotation" 10)
+        (format t "~a~%" (roslisp:call-service "setRobotRotation"
+                                               'quadrotor_controller-srv::cmd_points
+                                               :x x
+                                               :y y
+                                               :z z
+                                               :qx qx
+                                               :qy qy
+                                               :qz qz
+                                               :qw qw)))))
 
 ;;client-service to gazebo:take-picture quadrotor
 (defun forward-takecmd-to-gazebo (tmp)

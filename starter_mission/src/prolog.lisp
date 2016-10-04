@@ -42,9 +42,9 @@
 (def-fact-group cognitive-reasoning-costmap (desig-costmap)
   (<- (desig-costmap ?desig ?costmap)
     (costmap ?costmap)
-    (prepositions ?desig ?pose ?costmap))
+    (prepositions ?desig ?costmap))
   
-  (<- (prepositions ?desig ?pose ?costmap)
+  (<- (prepositions ?desig ?costmap)
     (or (desig-prop ?desig (:right ?object-name))
         (desig-prop ?desig (:right-of ?object-name)))
     (lisp-fun get-human-elem-pose ?object-name ?object-pose)
@@ -56,7 +56,7 @@
     (adjust-map ?costmap ?object-name ?object-pose))
   
 
-  (<- (prepositions ?desig ?pose ?costmap)
+  (<- (prepositions ?desig ?costmap)
     (or (desig-prop ?desig (:left ?object-name))
         (desig-prop ?desig (:left-of ?object-name)))
     (lisp-fun get-human-elem-pose ?object-name ?object-pose)
@@ -68,7 +68,7 @@
     (adjust-map ?costmap ?object-name ?object-pose)) 
 
 
-  (<- (prepositions ?desig ?pose ?costmap)
+  (<- (prepositions ?desig ?costmap)
     (or (desig-prop ?desig (:front-of ?object-name))
         (desig-prop ?desig (:in-front-of ?object-name)))
     (lisp-fun get-human-elem-pose ?object-name ?object-pose)
@@ -80,7 +80,7 @@
     (adjust-map ?costmap ?object-name ?object-pose))
    
   
-    (<- (prepositions ?desig ?pose ?costmap)
+    (<- (prepositions ?desig ?costmap)
     (or (desig-prop ?desig (:behind ?object-name))
         (desig-prop ?desig (:behind-of ?object-name)))
     (lisp-fun get-human-elem-pose ?object-name ?object-pose)
@@ -91,13 +91,30 @@
      ?costmap)
       (adjust-map ?costmap ?object-name ?object-pose))
 
-      (<- (prepositions ?desig ?pose ?costmap)
+      (<- (prepositions ?desig ?costmap)
     (or (desig-prop ?desig (:to ?object-name))
         (desig-prop ?desig (:next ?object-name))
         (desig-prop ?desig (:close-to ?object-name)))
         (lisp-fun get-human-elem-pose ?object-name ?object-pose)
         (adjust-map ?costmap ?object-name ?object-pose))
 
+  
+  (<- (prepositions ?desig ?costmap)
+    (desig-prop ?desig (:ontop ?object-name))
+    (semantic-map-costmap::semantic-map-objects ?all-objects)
+    (lisp-fun get-elem-pose ?object-name ?pose)
+    (costmap-padding ?padding)
+    (lisp-fun get-the-exact-object-to-pose ?all-objects 10 ?pose ?object-name ?w-objects)
+    (costmap-add-function semantic-map-free-space
+                          (make-semantic-map-costmap-by-human
+                           ?w-objects :invert t :padding ?padding)
+                          ?costmap)
+    (costmap ?costmap)
+    (lisp-fun get-human-elem-pose ?object-name ?object-pose)
+    (instance-of gaussian-generator ?gaussian-generator-id)
+    (costmap-add-function ?gaussian-generator-id
+                          (make-location-cost-function ?object-pose  1.0)
+                          ?costmap))
   ;;
   ;; Watch out, for the free-space you generated
   ;; a new generator which is based on the human-frame
@@ -114,5 +131,5 @@
    (costmap ?costmap)
    (instance-of gaussian-generator ?gaussian-generator-id)
    (costmap-add-function ?gaussian-generator-id
-                        (make-location-cost-function ?object-pose  3.0)
+                        (make-location-cost-function ?object-pose  2.5)
                         ?costmap)))

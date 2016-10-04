@@ -21,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   message_runtime
   geometry_msgs
+  gazebo_msgs
 )
 
 ## System dependencies are found with CMake's conventions

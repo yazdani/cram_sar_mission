@@ -44,6 +44,7 @@
                quadrotor_controller-srv
                img_mission-srv
                instructor_mission-msg
+               gazebo_msgs-srv
                alexandria)
   :components
   ((:module "src"

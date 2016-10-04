@@ -28,6 +28,7 @@
 
 (in-package :starter-mission)
 (defvar *puby* NIL)
+(defvar *obj-pose* NIL)
 
 ;; This function is checking if the instructions are
 ;; based on 'take' and 'move' actions and is forwarding
@@ -268,7 +269,7 @@
       (setf obj-pose (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* (format NIL "~a_link" obj) (format NIL "~a_link" (nth index liste)))))
       (if (string-equal (get-elem-type (nth index liste)) type)
           (setf poses (append (list (format NIL "~a:~a"(nth index liste)(get-distance obj-pose (get-elem-pose obj))))  poses))))
-     (format t "all poses: ~a~%" poses)
+     ;;(format t "all poses: ~a~%" poses)
        poses))
 
 
@@ -317,7 +318,7 @@
    type))
 
 (defun reference-by-human-frame (desig objname)
-;;(format t " und ~a und ~a~%" desig objname)
+(format t " und ~a und ~a~%" desig objname)
   (let*((result NIL)
         (cam (cam-depth-tf-transform))
         (temp NIL)
@@ -331,7 +332,7 @@
               (remove-local-tf-publisher *puby*))
                    
           (setf temp (look-at-object-x (cl-transforms:make-pose (cl-transforms:origin (cl-transforms-stamped:pose-stamped->pose result)) (cl-transforms:orientation (cl-transforms:transform->pose cam)))  (get-human-elem-pose objname)))
-
+          (setf *obj-pose* (get-human-elem-pose objname))
           (setf tmp (cl-transforms-stamped:make-pose-stamped "human"
                                                              0.0 (cl-transforms:origin temp)
                                                              (cl-transforms:orientation temp)))
@@ -570,7 +571,7 @@ quadrotor, so the rotation is on x-axis"
      (list (first all) (second all))))
 
 (defun move-action (action-list desig-list)
-  (format t "move-action~%")
+ ;; (format t "move-action~%")
   (let((action (split-action action-list))
        (pointed (split-property action-list))
        (spatial-property (split-spatial-relation action-list))
@@ -601,13 +602,15 @@ quadrotor, so the rotation is on x-axis"
     (cond ((string-equal "picture" spatial-property)
            (if (string-equal element "NIL")
                (setf desig-prop-list desig-list)
-               (setf desig-prop-list (append desig-list (list (list (direction-symbol "to") elem-name))))))
+               (setf desig-prop-list (append desig-list (list (list (direction-symbol "ontop") elem-name))))))
           (t
            (setf tmp-desig-list (append (list (list (direction-symbol spatial-property) elem-name)) (last desig-list)))
            (setf desig-prop-list (append (butlast desig-list) tmp-desig-list))))
-    (if (equal desig-list NIL)
+    (if (and (equal desig-list NIL)
+             (equal desig-prop-list NIL))
         (setf result (list action NIL desig-prop-list))
         (setf result (list action (make-designator :location desig-prop-list) desig-prop-list)))
+    (format t "takes result is ~a~%" result)
     result))
 
 (defun show-action (desig-list)
