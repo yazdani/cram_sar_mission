@@ -79,6 +79,27 @@
 		  (t (setf geom-list (cdr geom-list)))))
     objects))
 
+(defun get-the-exact-object-to-pose (geom-objects param object-pose object-name)
+   (let*((geom-list geom-objects)
+	(objects NIL)
+  (w-object NIL))
+ 
+    (loop while (/= (length geom-list) 0) 
+	  do(cond ((and T
+			(compare-distance-between-objects (slot-value (car geom-list) 'sem-map-utils:pose) object-pose param))
+          ;;   (format t " (slot-value (car geom-list) 'sem-map-utils:pose) ~a und ~a~%"  (slot-value (car geom-list) 'sem-map-utils:pose)  (slot-value (car geom-list) 'sem-map-utils:name))
+            ;;   (format t "frame is in getobjects ~a~%" cram-tf:*fixed-frame*)
+		   (setf objects
+			 (append objects (list (first geom-list))))
+		   (setf geom-list (cdr geom-list)))
+		  (t (setf geom-list (cdr geom-list)))))
+     (dotimes (index (length objects))
+       (if (not (string-equal (slot-value (nth index objects) 'sem-map-utils:name)
+                         object-name))
+           (setf w-object (append w-object (list (nth index objects))))))
+           
+    w-object))
+
 (defun compare-distance-between-objects (obj_position pose param)
   (let*((vector (cl-transforms:origin pose))
         (x-vec (cl-transforms:x vector))
