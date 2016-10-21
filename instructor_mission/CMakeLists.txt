@@ -54,6 +54,8 @@ add_message_files(
    FILES
    protocol_dialogue.msg
    cram_msg_type.msg
+   Propkey.msg
+   Desig.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -62,6 +64,7 @@ add_service_files(
    text_parser.srv
    cram_reason.srv
    call_cmd.srv
+   HMIDesig.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -167,7 +170,14 @@ add_dependencies(main_server instructor_mission_gencpp)
 #############
 ## Install ##
 #############
-
+# show additional files in qtcreator
+execute_process(COMMAND find ${PROJECT_SOURCE_DIR} -type f
+  OUTPUT_VARIABLE FILES_STRING)
+string(REPLACE "\n" ";" FILES_LIST ${FILES_STRING})
+add_custom_target(additional_files_${PROJECT_NAME} SOURCES
+  ${FILES_LIST}
+#  ${PROJECT_SOURCE_DIR}/../README.md
+) 
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 

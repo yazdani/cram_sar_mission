@@ -31,6 +31,9 @@
 
 ;;###################################################################################################################################################################################################################################################################################################################################################################################################################POINTING GESTURE CALCULATIONS###########################################################################################################################################################################################################################################################################################################################################################################################################################################################################;;
 
+(defun set-beginning-of-arrow (pose)
+  (publish-pose pose :id 15000))
+
 (defun give-pointed-at-not-bboxes (point)
   (let*((sem-map  (sem-map:get-semantic-map))
         (elem NIL)
@@ -44,6 +47,7 @@
         (liste-left (all-the-points-lefts liste-tr))
         (liste-front (all-the-points-fronts liste-tr))
         (liste-back (all-the-points-backs liste-tr)))
+    ;; (publish-pose (first liste-tr) :id 16000)
     (dotimes (jindex (length liste-tr))
       do (dotimes(jo (length sem-keys))
           do(let* ((pose (cl-transforms:origin (slot-value (gethash (nth jo sem-keys) sem-hash) 'sem-map-utils:pose)))
@@ -61,6 +65,7 @@
                    (lvalue (checker-at-distance pose lpoint))
                    (fvalue (checker-at-distance pose fpoint))
                    (bvalue (checker-at-distance pose  bpoint)))
+              ;;(format t "pose is ~a~%" pose)
                   (cond ((and (or (equal value T)
                                   (equal uvalue T)
                                   (equal dvalue T)
@@ -112,6 +117,7 @@
                (>= yps 0)) ;>=
           (setf liste-tr (the-function-up-left point iks yps zet num liste-tr humanpose)))
          (t()))
+  ;;  (format t "liste-tr02 is ~a~%" liste-tr)
     (dotimes (index (length liste-tr))
      (setf temp (cons (cl-transforms:make-pose
                        (cl-transforms:origin (nth index liste-tr))

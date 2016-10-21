@@ -45,6 +45,7 @@
   <build_depend>cram_bullet_reasoning_belief_state</build_depend>
   <build_depend>cram_bullet_reasoning_designators</build_depend>
   <build_depend>cram_designators</build_depend>
+  <build_depend>cram_beliefstate</build_depend>
   <build_depend>cram_location_costmap</build_depend>
   <build_depend>cram_occupancy_grid_costmap</build_depend>
   <build_depend>cram_plan_library</build_depend>
