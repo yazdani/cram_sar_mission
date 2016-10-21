@@ -38,6 +38,7 @@
                cram-bullet-reasoning-belief-state
                cram-plan-library
                cram-bullet-reasoning-designators
+               cram-beliefstate
                cl-tf
                cram-semantic-map-designators
                instructor_mission-srv
@@ -54,7 +55,8 @@
      (:file "cost-functions" :depends-on ("package"))
      (:file "prolog" :depends-on ("package" "cost-functions"))
      (:file "starter" :depends-on ("package" "internal-functions"))
-     (:file "internal-functions" :depends-on ("package" "gesture-calculation" "costmap-knowledge" "prolog" "designators"))
+     (:file "internal-functions" :depends-on ("package" "gesture-calculation" "costmap-knowledge" "prolog" "designators" "publishing"))
+     (:file "publishing" :depends-on ("package"))
      (:file "gesture-calculation" :depends-on ("package"))
      (:file "designators" :depends-on ("package"))
 

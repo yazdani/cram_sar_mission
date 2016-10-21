@@ -27,133 +27,53 @@
 ;;; POSSIBILITY OF SUCH DAMAGE.
 
 (in-package :starter-mission)
-(defvar *value* "")
-(defvar *vec-chain* (cl-transforms:make-identity-vector))
+
 (defun start-my-ros ()
-  (roslisp-utilities:startup-ros))
+  (roslisp-utilities:startup-ros ))
 
 ;; ROSSERVICE FOR DOING REASONING
 
 (defun start_reasoning_service ()
-  (reasoning-call))
+(hmidesig-call))
+ ;; (reasoning-call))
 
-(defun reasoning-call ()
- (roslisp-utilities:startup-ros :name "start_reasoning_service")
-  (roslisp:register-service "service_cram_reasoning" 'instructor_mission-srv:cram_reason)
-  (roslisp:ros-info (basics-system) "start reasoning service")
+
+(defun hmidesig-call ()
+ (roslisp-utilities:startup-ros :name "start_hmidesig_service")
+  (roslisp:register-service "service_cram_reasoning" 'instructor_mission-srv:HMIDesig)
+  (roslisp:ros-info (basics-system) "start hmireasoning service")
  (roslisp:spin-until nil 1000))
 
- (roslisp:def-service-callback instructor_mission-srv:cram_reason (cmd x y z)
-   (let((*vec-chain* (cl-transforms:make-3d-vector x y z))
-        (liste (correct-parsing cmd))
-        (value NIL)(pose NIL)
-        (newliste NIL) (rotation-cmd NIL))
-     (cond ((not (equal NIL (second liste)))
-            (setf newliste (designator-filled-with-values (second liste)))               
-               (setf pose (reference-by-human-frame newliste (second (first (last (desig:properties newliste)))))))
-              (t (setf newliste NIL)))
-        (cond((string-equal "move" (first liste))
-              (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
-                                                     (cl-transforms:y (cl-transforms:origin pose))
-                                                     (cl-transforms:z (cl-transforms:origin pose))
-                                                     (cl-transforms:x (cl-transforms:orientation pose))
-                                                     (cl-transforms:y (cl-transforms:orientation pose))
-                                                     (cl-transforms:z (cl-transforms:orientation pose))
-                                                     (cl-transforms:w (cl-transforms:orientation pose))))
-              (let((quad-pose NIL)
-                   (new-quad-pose NIL)
-                   (lisp-pose NIL))
-                   (setf quad-pose (gazebo_msgs-srv:pose (roslisp:call-service "gazebo/get_model_state"
-                                                               'gazebo_msgs-srv::GetModelState
-                                                               :model_name "quadrotor"
-                                                               :relative_entity_name "")))
-                (setf lisp-pose (cl-transforms:make-pose (cl-transforms:make-3d-vector
-                                                          (geometry_msgs-msg:x
-                                                           (geometry_msgs-msg:position quad-pose))
-                                                          (geometry_msgs-msg:y
-                                                           (geometry_msgs-msg:position quad-pose))
-                                                          (geometry_msgs-msg:z
-                                                           (geometry_msgs-msg:position quad-pose)))
-                                                         (cl-transforms:make-quaternion
-                                                          (geometry_msgs-msg:x
-                                                           (geometry_msgs-msg:orientation quad-pose))
-                                                          (geometry_msgs-msg:y
-                                                           (geometry_msgs-msg:orientation quad-pose))
-                                                          (geometry_msgs-msg:z
-                                                           (geometry_msgs-msg:orientation quad-pose))
-                                                          (geometry_msgs-msg:w
-                                                           (geometry_msgs-msg:orientation quad-pose)))))
-                (setf new-quad-pose (look-at-object-x lisp-pose *obj-pose*))
-                (setf rotation-cmd (forward-rotatecmd-to-gazebo new-quad-pose))))
-            ((and (string-equal "take" (first liste))
-                  (equal NIL pose))
-             (setf *value* (forward-takecmd-to-gazebo "go")))
-            ((and (string-equal "take" (first liste))
-                  (not (equal NIL pose)))
-             (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
-                                                    (cl-transforms:y (cl-transforms:origin pose))
-                                                    (cl-transforms:z (cl-transforms:origin pose))
-                                                    (cl-transforms:x (cl-transforms:orientation pose))
-                                                    (cl-transforms:y (cl-transforms:orientation pose))
-                                                    (cl-transforms:z (cl-transforms:orientation pose))
-                                                    (cl-transforms:w (cl-transforms:orientation pose))))
-             (let((quad-pose NIL)
-                   (new-quad-pose NIL)
-                   (lisp-pose NIL))
-                   (setf quad-pose (gazebo_msgs-srv:pose (roslisp:call-service "gazebo/get_model_state"
-                                                               'gazebo_msgs-srv::GetModelState
-                                                               :model_name "quadrotor"
-                                                               :relative_entity_name "")))
-                (setf lisp-pose (cl-transforms:make-pose (cl-transforms:make-3d-vector
-                                                          (geometry_msgs-msg:x
-                                                           (geometry_msgs-msg:position quad-pose))
-                                                          (geometry_msgs-msg:y
-                                                           (geometry_msgs-msg:position quad-pose))
-                                                          (geometry_msgs-msg:z
-                                                           (geometry_msgs-msg:position quad-pose)))
-                                                         (cl-transforms:make-quaternion
-                                                          (geometry_msgs-msg:x
-                                                           (geometry_msgs-msg:orientation quad-pose))
-                                                          (geometry_msgs-msg:y
-                                                           (geometry_msgs-msg:orientation quad-pose))
-                                                          (geometry_msgs-msg:z
-                                                           (geometry_msgs-msg:orientation quad-pose))
-                                                          (geometry_msgs-msg:w
-                                                           (geometry_msgs-msg:orientation quad-pose)))))
-                (setf new-quad-pose (look-at-object-x lisp-pose *obj-pose*))
-                (setf rotation-cmd (forward-rotatecmd-to-gazebo new-quad-pose)))
-             (roslisp:wait-duration 2)
-             (setf *value* (forward-takecmd-to-gazebo "go")))
-            ((and (string-equal "show" (first liste))
-                  (equal pose NIL))
-             (format t "value is ~a~%" *value*)
-             (cond((or (string-equal *value* "") (string-equal *value* "value"))
-                   (setf *value* (forward-takecmd-to-gazebo "go"))
-                   (roslisp:wait-duration 2)
-                   (setf value (forward-showcmd-to-gazebo *value*)))
-                  (t (roslisp:wait-duration 2)
-                     (setf value (forward-showcmd-to-gazebo *value*)))))
-            ((and (string-equal "show" (first liste))
-                  (not (equal pose NIL)))
-             (format t "newliste ~a~%" newliste)
-             (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
-                                                     (cl-transforms:y (cl-transforms:origin pose))
-                                                     (cl-transforms:z (cl-transforms:origin pose))
-                                                     (cl-transforms:x (cl-transforms:orientation pose))
-                                                     (cl-transforms:y (cl-transforms:orientation pose))
-                                                     (cl-transforms:z (cl-transforms:orientation pose))
-                                                     (cl-transforms:w (cl-transforms:orientation pose))))
-             (roslisp:wait-duration 2)       
-              (setf *value* (forward-takecmd-to-gazebo "go"))
-                   (roslisp:wait-duration 2)
-                   (setf value (forward-showcmd-to-gazebo *value*)))))
-   (roslisp:make-response :result "Done!"))
-
-(Defun starter-mission ()
-  (let*((desig (make-designator :location `((:left-of "bigtree03")))))
-    (reference desig)
-    (setf cram-tf:*fixed-frame* "/map")))
-
+(roslisp:def-service-callback instructor_mission-srv::HMIDesig (desigs)
+  (let ((id  (beliefstate:start-node "INTERPRET-INSTRUCTION-DESIGNATOR" NIL 2))
+        (newliste '())
+        (logged_desigs (create-logged-designator desigs)))
+    (cond ((not (null (length logged_desigs)))
+           (dotimes (incr (length logged_desigs))
+             do (cond((not (null (desig-prop-value (nth incr logged_desigs) :loc)))
+                      (let*((design (designator-filled-with-values (desig-prop-value  (nth incr logged_desigs) :loc)))
+                            (actionprop  (desig-prop-value (nth incr logged_desigs) :type))
+                            (actiondesig (make-designator :action `((:type ,actionprop)
+                                                                    (:loc ,design))))
+                            (position (reference-by-human-frame design (second (first (last (desig:properties design)))))))
+                        (setf newliste (append newliste (list  (make-designator :action `((:type ,actionprop)
+                                                                                          (:loc ,position))))))
+                        (format t "wuaaat ~%")
+                        (beliefstate:add-designator-to-active-node (nth incr logged_desigs))
+                         (format t "wuaaat3 ~%")
+                        (beliefstate:add-designator-to-active-node actiondesig)
+                         (format t "wuaaat4 ~%")
+                        (beliefstate:add-designator-to-active-node (make-designator :action `((:type ,actionprop)
+                                                                                          (:loc ,position))))))
+                     (t (setf newliste (append newliste (list (nth incr logged_desigs))))
+                        (beliefstate:add-designator-to-active-node (nth incr logged_desigs))))))
+          (t (setf newliste NIL)))
+    (beliefstate:stop-node id)
+    (beliefstate:extract-files :name "INTERPRET-INSTRUCTION-DESIGNATOR")
+    (format t "wuaaat ~a~%" newliste)
+    (gazebo-functions newliste))
+    (roslisp:make-response :result "Done!")) 
+   
 
 (defun get-human-pose ()
   (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* "/map" "/human")))
@@ -206,6 +126,9 @@
 
 ;;client-service to gazebo: move quadrotor
 (defun forward-rotatecmd-to-gazebo (pose)
+ ;; (if (not (equal *pub-intern* NIL))
+ ;;     (remove-local-tf-publisher *pub-intern*))
+ ;; (setf *pub-intern* (create-local-tf-publisher pose "pub-intern"))
  ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
 (let* ((vec (cl-transforms:origin pose))
       (quat (cl-transforms:orientation pose))

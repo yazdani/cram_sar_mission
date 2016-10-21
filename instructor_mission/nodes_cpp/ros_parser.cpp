@@ -5,6 +5,8 @@
 #include <sys/wait.h>
 #include "instructor_mission/text_parser.h"
 #include "instructor_mission/protocol_dialogue.h"
+#include "instructor_mission/Desig.h"
+#include "instructor_mission/Propkey.h"
 #include <unistd.h>
 #include "err.h"
 #include <vector>
@@ -29,7 +31,15 @@
 
 
 int sockfd, newsockfd, portno, clilen;
-
+  std::string tok1, tok2, tok3, tok4, tok5, tok6, tok7, tok8, tok9, tok10;
+  std::string tok11, tok12, tok13, tok14, tok15, tok16, tok17, tok18, tok19, tok20;
+  std::string tok21, tok22, tok23, tok24, tok25, tok26, tok27, tok28, tok29, tok30;
+  std::string tok31, tok32, tok33, tok34, tok35, tok36, tok37, tok38, tok39, tok40;
+  std::string tok41, tok42, tok43, tok44, tok45, tok46, tok47, tok48, tok49, tok50;
+  std::string tok51, tok52, tok53, tok54, tok55, tok56, tok57, tok58, tok59, tok60;
+  std::string part1, part2;
+  std::string flag1, flag2;
+ 
 struct sockaddr_in serv_addr, cli_addr;
 ros::Publisher chatter_pub;
 using namespace std;
@@ -45,95 +55,117 @@ vector<string> splitString(string input, string delimiter)
 
 string without_brakets(string value)
 {
-  
   std::vector<string> no_brackets = splitString(value, ";");
-  std::vector<string> new_string;
-  string s2 = "<=inside";
-  std::string token;
-  std::string token1;
-  std::vector<string> cmds;
-  std::vector<string> vec;
+  string array_vec= "";
   
-  
-  //move(right,tree)<=inside(left,house) --> move(right,tree);move(left,house)
-  for(int i = 0; i < no_brackets.size(); i++)
+  std::string s2 = "inside";
+  std::string s3 = "pointed_at";
+  for(unsigned i = 0; i < no_brackets.size(); i++)
     {
-      if(strstr(no_brackets[i].c_str(),s2.c_str())) //inside
+      boost::replace_all(no_brackets[i],"picture)","nil,picture)");
+      boost::replace_all(no_brackets[i],"image)","nil,picture)");
+      if(strstr(no_brackets[i].c_str(),s2.c_str())) //if inside
 	{
-	  token = no_brackets[i].substr(0, no_brackets[i].find("(")); //gives first action
-	  token = ";"+token;
-	  boost::replace_all(no_brackets[i],"<=inside",token);
-	}    
-      
-      new_string.push_back(no_brackets[i]);
-    }
-  
-  //move(right,house);move(left,tree) --> split into two vectors
-  int pointers = 0;
-  for(int j = 0; j < new_string.size(); j++)
-    {
-      std::vector<string> test = splitString(new_string[j], ";");
-      
-      if(test.size() > 1)
-	{
-	  while(pointers < test.size())
+	  part1 = no_brackets[i].substr(0, no_brackets[i].find("<=")); //erster abschnitt
+	  part2 = no_brackets[i].substr(no_brackets[i].find("inside"),no_brackets[i].size()); //letzter abschnitt
+	  if(strstr(part1.c_str(),s3.c_str())) //if pointed
 	    {
-	      cmds.push_back(test[pointers]);
-	      pointers++;
+	      tok1 = part1.substr(0,part1.find(",")); //move(right
+	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
+	      tok3 = tok2.substr(1,tok2.size());// right token12
+	      tok4 = part1.substr(0,part1.find(",")); //move(right   
+	      tok5 = part1.substr(0,part1.find("(")); //move token 11
+	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
+	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
+	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
+	      tok9 = tok8.substr(1,tok8.size()); //rock))
+	      tok10 = tok9.substr(0,tok9.find(")")); //rock
+	      flag1 = "true";
+
+		array_vec = array_vec + tok4 +","+ tok3 +","+ tok10 +","+ flag1;
+
+
+	    }else //if not pointed
+	    {
+	      
+	      tok20 = part1.substr(0,part1.find(",")); //move(right
+	      tok21 = tok20.substr(tok20.find("("),tok20.size());// (right
+	      tok22 = tok21.substr(1,tok21.size());// right
+	      
+	      tok23 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size());
+	      tok24 = tok23.substr(1,tok23.size());
+	      tok25 = tok24.substr(0,tok24.find(")")); //first obj
+	      tok26 = no_brackets[i].substr(0,no_brackets[i].find("(")); //action
+	      flag1 = "false";
+
+		array_vec = array_vec +tok26 +","+ tok22 +","+ tok25 +","+ flag1;
+
 	    }
-	  pointers = 0;
-	}else
+	  
+	  if(strstr(part2.c_str(),s3.c_str())) //if pointed in second part
+	    {
+	      tok30 = part2.substr(0,part2.find(",")); //inside(right
+	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
+	      tok32 = tok31.substr(1,tok31.size()); //right
+	      
+	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
+	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
+	      tok35 = tok34.substr(1,tok34.size()); //rock))
+	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
+	      flag2 = "true";
+	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ tok36 +","+ flag2 + "0";
+
+	    }else //if not pointed in second part
+	    {
+	      
+	      tok40 = part2.substr(0,part2.find(",")); //inside(next
+	      tok41 = tok40.substr(tok40.find("("),tok40.size()); //(next
+	      tok42 = tok41.substr(1,tok41.size()); //left
+	      tok43 = part2.substr(part2.find(","),part2.size()); 
+	      tok44 = tok43.substr(0,tok43.find(")")); 
+	      tok45 = tok44.substr(1,tok44.size()); //tree
+	      flag2 = "false"; 
+	      array_vec = array_vec + "," +"repeat" +","+ tok42 +","+ tok45 +","+ flag2 + "0";
+	    }
+	}else //if not inside
 	{
-	  cmds.push_back(new_string[j]);
+	  if(strstr(no_brackets[i].c_str(),s3.c_str())) //if pointed
+	    {
+	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
+	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
+	      tok52 = tok51.substr(1,tok51.size());// right token12
+	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
+	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
+	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
+	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
+	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
+	      tok58 = tok57.substr(1,tok57.size()); //rock))
+	      tok59 = tok58.substr(0,tok58.find(")")); //rock
+	      flag2 = "true";
+
+		array_vec =  array_vec + tok54 +","+ tok52 +","+ tok59 +","+ flag2 + "0";
+
+	    }else
+	    {
+	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
+	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
+	      tok52 = tok51.substr(1,tok51.size());// right token12
+	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
+	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
+	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,rock)
+	      tok56 = tok55.substr(1,tok55.size()); //rock))
+	      tok59 = tok56.substr(0,tok56.find(")")); //rock
+	      flag2 = "false";
+
+		array_vec = array_vec + tok54 +","+ tok52 +","+ tok59 +","+ flag2 + "0";
+        
+	    }
 	}
-      
     }
-  
-  std::vector<string> new_vec;
-  for(int index = 0; index < cmds.size(); index++)
-    {
-      boost::replace_all(cmds[index],"pointed_at(","pointed_at,");
-      boost::replace_all(cmds[index],"broken(","broken,");
-      boost::replace_all(cmds[index],"big(","big,");
-      boost::replace_all(cmds[index],"small(","small,");
-      boost::replace_all(cmds[index],"first(","first,");
-      boost::replace_all(cmds[index],"second(","second,");
-      boost::replace_all(cmds[index],"third(","third,");
-      boost::replace_all(cmds[index],"fourth(","fourth,");
-      boost::replace_all(cmds[index],"last(","last,");
-      boost::replace_all(cmds[index],"))",")");
-    }
-  
-  for(int sup = 0; sup < cmds.size(); sup++)
-    {
-      std::vector<string> testing = splitString(cmds[sup], ",");
-      if(testing.size() == 1)
-	{
-	  boost::replace_all(cmds[sup],"picture)","picture,nil,nil)");
-          boost::replace_all(cmds[sup],"image)","picture,nil,nil)");
-	  boost::replace_all(cmds[sup],"right)","right,nil,nil)");
-	  boost::replace_all(cmds[sup],"left)","left,nil,nil)");
-	  boost::replace_all(cmds[sup],"ahead)","ahead,nil,nil)");
-	  boost::replace_all(cmds[sup],"around)","around,nil,nil)");
-	}else 
-	if(testing.size() == 2)
-	  {
-	    boost::replace_all(cmds[sup],",",",nil,");
-	  }
-    }
-  string toktok = "";
-  
-  for(int pointer = 0; pointer < cmds.size(); pointer++)
-    {
-      if(pointer != cmds.size()-1)
-	{
-	  toktok = toktok + cmds[pointer]+ ";";
-	}else
-	{
-	  toktok = toktok + cmds[pointer];
-	}
-    }
-  return toktok;
+
+  ROS_INFO_STREAM("array_vec: " + array_vec);
+return array_vec;
+
 }
 
 string interpretByParser(string cmd)
@@ -167,6 +199,7 @@ bool parser(instructor_mission::text_parser::Request &req,
 {
   ROS_INFO_STREAM(req.goal);
   instructor_mission::protocol_dialogue msg;
+  std::vector<string> marray;
   msg.agent.data="human";
   msg.command.data = req.goal;
   chatter_pub.publish(msg);

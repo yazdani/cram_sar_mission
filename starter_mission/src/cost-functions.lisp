@@ -31,6 +31,10 @@
 (defvar *tf* NIL)
 (defvar *pub* NIL)
 
+(defvar *obj-pose* NIL)
+(defvar *pub-intern* NIL)
+(defvar *value* "")
+(defvar *vec-chain*   (cl-transforms:make-identity-vector))
 
 (defun init-tf ()
   (setf *tf* (make-instance 'cl-tf:transform-listener))

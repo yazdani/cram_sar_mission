@@ -125,6 +125,7 @@ desig))
 
 
 (defun get-value-basedon-type->get-objects-infrontof-human (obj)
+  (format t "get-value-based-on-type~%")
  (let*((seqs (get-objects-infrontof-human))
         (check 1000)
         (elem NIL))
