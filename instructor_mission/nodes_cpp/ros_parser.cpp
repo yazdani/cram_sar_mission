@@ -60,6 +60,15 @@ string without_brakets(string value)
   
   std::string s2 = "inside";
   std::string s3 = "pointed_at";
+  std::string p1 = "small";
+  std::string p2 = "big";
+  std::string c1 = "red";
+  std::string c2 = "blue";
+  std::string c3 = "green";
+  std::string c4 = "brown";
+  std::string property1 = "empty";
+  std::string property2 = "empty";
+
   for(unsigned i = 0; i < no_brackets.size(); i++)
     {
       boost::replace_all(no_brackets[i],"picture)","nil,picture)");
@@ -74,20 +83,114 @@ string without_brakets(string value)
 	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
 	      tok3 = tok2.substr(1,tok2.size());// right token12
 	      tok4 = part1.substr(0,part1.find(",")); //move(right   
-	      tok5 = part1.substr(0,part1.find("(")); //move token 11
+	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
 	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
 	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
 	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
 	      tok9 = tok8.substr(1,tok8.size()); //rock))
 	      tok10 = tok9.substr(0,tok9.find(")")); //rock
 	      flag1 = "true";
+	      property1 = "empty";
+		array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+tok10 +","+ flag1;
 
-		array_vec = array_vec + tok4 +","+ tok3 +","+ tok10 +","+ flag1;
 
-
-	    }else //if not pointed
+	    }else if(strstr(part1.c_str(),p1.c_str())) //if not pointed but small
 	    {
-	      
+	      tok1 = part1.substr(0,part1.find(",")); //move(right
+	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
+	      tok3 = tok2.substr(1,tok2.size());// right token12
+	      tok4 = part1.substr(0,part1.find(",")); //move(right   
+	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
+	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
+	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
+	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
+	      tok9 = tok8.substr(1,tok8.size()); //rock))
+	      tok10 = tok9.substr(0,tok9.find(")")); //rock
+	      flag1 = "false";
+	      property1 = "small";
+
+	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
+	    }else if(strstr(part1.c_str(),p2.c_str()))//if not small but big
+	    {
+	      tok1 = part1.substr(0,part1.find(",")); //move(right
+	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
+	      tok3 = tok2.substr(1,tok2.size());// right token12
+	      tok4 = part1.substr(0,part1.find(",")); //move(right   
+	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
+	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
+	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
+	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
+	      tok9 = tok8.substr(1,tok8.size()); //rock))
+	      tok10 = tok9.substr(0,tok9.find(")")); //rock
+	      property1 = "big";
+	      flag1 = "false";
+	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
+
+
+
+	    }else if(strstr(part1.c_str(),c1.c_str())) //if not big but colored red
+	    {
+	      tok1 = part1.substr(0,part1.find(",")); //move(right
+	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
+	      tok3 = tok2.substr(1,tok2.size());// right token12
+	      tok4 = part1.substr(0,part1.find(",")); //move(right   
+	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
+	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
+	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
+	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
+	      tok9 = tok8.substr(1,tok8.size()); //rock))
+	      tok10 = tok9.substr(0,tok9.find(")")); //rock
+	      property1 = "red";
+	      flag1 = "false";
+	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
+
+	    }else if(strstr(part1.c_str(),c2.c_str())) //if not red but blue
+	    {
+	      tok1 = part1.substr(0,part1.find(",")); //move(right
+	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
+	      tok3 = tok2.substr(1,tok2.size());// right token12
+	      tok4 = part1.substr(0,part1.find(",")); //move(right   
+	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
+	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
+	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
+	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
+	      tok9 = tok8.substr(1,tok8.size()); //rock))
+	      tok10 = tok9.substr(0,tok9.find(")")); //rock
+	      property1 = "blue";
+	      flag1 = "false";
+	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
+	    }else if(strstr(part1.c_str(),c3.c_str())) //if not blue but green
+	    {    
+	      tok1 = part1.substr(0,part1.find(",")); //move(right
+	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
+	      tok3 = tok2.substr(1,tok2.size());// right token12
+	      tok4 = part1.substr(0,part1.find(",")); //move(right   
+	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
+	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
+	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
+	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
+	      tok9 = tok8.substr(1,tok8.size()); //rock))
+	      tok10 = tok9.substr(0,tok9.find(")")); //rock
+	      property1 = "green";
+	      flag1 = "false";
+	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
+	    }else if(strstr(part1.c_str(),c4.c_str())) //if not green but brown
+	    {
+	      tok1 = part1.substr(0,part1.find(",")); //move(right
+	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
+	      tok3 = tok2.substr(1,tok2.size());// right token12
+	      tok4 = part1.substr(0,part1.find(",")); //move(right   
+	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
+	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
+	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
+	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
+	      tok9 = tok8.substr(1,tok8.size()); //rock))
+	      tok10 = tok9.substr(0,tok9.find(")")); //rock
+	      property1 = "brown";
+	      flag1 = "false";
+	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
+	    }else
+	    {
 	      tok20 = part1.substr(0,part1.find(",")); //move(right
 	      tok21 = tok20.substr(tok20.find("("),tok20.size());// (right
 	      tok22 = tok21.substr(1,tok21.size());// right
@@ -97,8 +200,8 @@ string without_brakets(string value)
 	      tok25 = tok24.substr(0,tok24.find(")")); //first obj
 	      tok26 = no_brackets[i].substr(0,no_brackets[i].find("(")); //action
 	      flag1 = "false";
-
-		array_vec = array_vec +tok26 +","+ tok22 +","+ tok25 +","+ flag1;
+	      property1 = "empty";
+	      array_vec = array_vec +tok26 +","+ tok22 +","+ property1 + ","+ tok25 +","+ flag1;
 
 	    }
 	  
@@ -113,9 +216,97 @@ string without_brakets(string value)
 	      tok35 = tok34.substr(1,tok34.size()); //rock))
 	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
 	      flag2 = "true";
-	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ tok36 +","+ flag2 + "0";
+	      property2 = "empty";
+	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
 
-	    }else //if not pointed in second part
+	    }
+	  else if(strstr(part2.c_str(),p1.c_str())) //if not pointed but small
+	    {
+	      tok30 = part2.substr(0,part2.find(",")); //inside(right
+	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
+	      tok32 = tok31.substr(1,tok31.size()); //right
+	      
+	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
+	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
+	      tok35 = tok34.substr(1,tok34.size()); //rock))
+	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
+	      property2 = "small";
+	      flag2 = "false";
+	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
+	     
+	    }else if(strstr(part2.c_str(),p2.c_str()))//if not small but big
+	    {
+	      tok30 = part2.substr(0,part2.find(",")); //inside(right
+	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
+	      tok32 = tok31.substr(1,tok31.size()); //right
+	      
+	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
+	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
+	      tok35 = tok34.substr(1,tok34.size()); //rock))
+	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
+	      flag2 = "false";
+	      property2 = "big";	     
+	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
+	     
+	    }else if(strstr(part2.c_str(),c1.c_str())) //if not big but colored red
+	    {
+	      tok30 = part2.substr(0,part2.find(",")); //inside(right
+	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
+	      tok32 = tok31.substr(1,tok31.size()); //right
+	      
+	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
+	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
+	      tok35 = tok34.substr(1,tok34.size()); //rock))
+	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
+	      flag2 = "false";
+	      property2 = "red";
+	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + "," +tok36 +","+ flag2 + "0";
+	      
+
+	    }else if(strstr(part2.c_str(),c2.c_str())) //if not red but blue
+	    {	
+	      tok30 = part2.substr(0,part2.find(",")); //inside(right
+	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
+	      tok32 = tok31.substr(1,tok31.size()); //right
+	      
+	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
+	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
+	      tok35 = tok34.substr(1,tok34.size()); //rock))
+	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
+	      flag2 = "false";
+	      property2 = "blue";
+	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
+	     
+	    }else if(strstr(part2.c_str(),c3.c_str())) //if not blue but green
+	    {    
+	      tok30 = part2.substr(0,part2.find(",")); //inside(right
+	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
+	      tok32 = tok31.substr(1,tok31.size()); //right
+	      
+	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
+	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
+	      tok35 = tok34.substr(1,tok34.size()); //rock))
+	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
+	      flag2 = "false";
+	      property2 = "green";
+	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
+	      
+	    }else if(strstr(part2.c_str(),c4.c_str())) //if not green but brown
+	    {
+	      tok30 = part2.substr(0,part2.find(",")); //inside(right
+	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
+	      tok32 = tok31.substr(1,tok31.size()); //right
+	      
+	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
+	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
+	      tok35 = tok34.substr(1,tok34.size()); //rock))
+	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
+	      flag2 = "false";
+	      property2 = "brown";
+	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
+
+	    }
+	  else //if not pointed in second part
 	    {
 	      
 	      tok40 = part2.substr(0,part2.find(",")); //inside(next
@@ -124,8 +315,9 @@ string without_brakets(string value)
 	      tok43 = part2.substr(part2.find(","),part2.size()); 
 	      tok44 = tok43.substr(0,tok43.find(")")); 
 	      tok45 = tok44.substr(1,tok44.size()); //tree
-	      flag2 = "false"; 
-	      array_vec = array_vec + "," +"repeat" +","+ tok42 +","+ tok45 +","+ flag2 + "0";
+	      flag2 = "false";
+	      property2 = "empty";
+	      array_vec = array_vec + "," +"repeat" +","+ tok42 +","+property2+","+ tok45 +","+ flag2 + "0";
 	    }
 	}else //if not inside
 	{
@@ -142,10 +334,105 @@ string without_brakets(string value)
 	      tok58 = tok57.substr(1,tok57.size()); //rock))
 	      tok59 = tok58.substr(0,tok58.find(")")); //rock
 	      flag2 = "true";
+	      property2 = "empty";
+		array_vec =  array_vec + tok54 +","+ tok52  +","+property2+","+ tok59 +","+ flag2 + "0";
 
-		array_vec =  array_vec + tok54 +","+ tok52 +","+ tok59 +","+ flag2 + "0";
+	    }  else if(strstr(no_brackets[i].c_str(),p1.c_str())) //if not pointed but small
+	    {
+	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
+	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
+	      tok52 = tok51.substr(1,tok51.size());// right token12
+	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
+	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
+	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
+	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
+	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
+	      tok58 = tok57.substr(1,tok57.size()); //rock))
+	      tok59 = tok58.substr(0,tok58.find(")")); //rock
+	      property2 = "small";
+	      flag2 = "false";
+	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";      
+	    }else if(strstr(no_brackets[i].c_str(),p2.c_str()))//if not small but big
+	    {
+	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
+	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
+	      tok52 = tok51.substr(1,tok51.size());// right token12
+	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
+	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
+	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
+	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
+	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
+	      tok58 = tok57.substr(1,tok57.size()); //rock))
+	      tok59 = tok58.substr(0,tok58.find(")")); //rock
+	      property2 = "big";
+	      flag2 = "false";
+	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";
 
-	    }else
+	    }else if(strstr(no_brackets[i].c_str(),c1.c_str())) //if not big but colored red
+	    {
+	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
+	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
+	      tok52 = tok51.substr(1,tok51.size());// right token12
+	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
+	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
+	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
+	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
+	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
+	      tok58 = tok57.substr(1,tok57.size()); //rock))
+	      tok59 = tok58.substr(0,tok58.find(")")); //rock
+	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";
+	      flag2 = "false";
+	      property2 = "red";
+
+	    }else if(strstr(no_brackets[i].c_str(),c2.c_str())) //if not red but blue
+	    {	
+	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
+	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
+	      tok52 = tok51.substr(1,tok51.size());// right token12
+	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
+	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
+	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
+	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
+	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
+	      tok58 = tok57.substr(1,tok57.size()); //rock))
+	      tok59 = tok58.substr(0,tok58.find(")")); //rock
+	      flag2 = "false";
+	      property2 = "blue";
+	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";
+	      
+	    }else if(strstr(no_brackets[i].c_str(),c3.c_str())) //if not blue but green
+	    {    
+	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
+	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
+	      tok52 = tok51.substr(1,tok51.size());// right token12
+	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
+	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
+	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
+	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
+	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
+	      tok58 = tok57.substr(1,tok57.size()); //rock))
+	      tok59 = tok58.substr(0,tok58.find(")")); //rock
+	      property2 = "green";
+	      flag2 = "false";
+	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";
+	     
+	    }else if(strstr(part1.c_str(),c4.c_str())) //if not green but brown
+	    {
+	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
+	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
+	      tok52 = tok51.substr(1,tok51.size());// right token12
+	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
+	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
+	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
+	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
+	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
+	      tok58 = tok57.substr(1,tok57.size()); //rock))
+	      tok59 = tok58.substr(0,tok58.find(")")); //rock
+	      property2 = "brown";
+	      flag2 = "false";
+	      array_vec =  array_vec + tok54 +","+ tok52 +","+ property2 +","+ tok59 +","+ flag2 + "0";
+	  
+	    }else //if not pointed and all the properties didn't fit
 	    {
 	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
 	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
@@ -156,8 +443,8 @@ string without_brakets(string value)
 	      tok56 = tok55.substr(1,tok55.size()); //rock))
 	      tok59 = tok56.substr(0,tok56.find(")")); //rock
 	      flag2 = "false";
-
-		array_vec = array_vec + tok54 +","+ tok52 +","+ tok59 +","+ flag2 + "0";
+	      property2 = "empty";
+	      array_vec = array_vec + tok54 +","+ tok52 +","+ property2 +","+ tok59 +","+ flag2 + "0";
         
 	    }
 	}

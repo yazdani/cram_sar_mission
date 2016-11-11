@@ -133,3 +133,31 @@
    (costmap-add-function ?gaussian-generator-id
                         (make-location-cost-function ?object-pose  2.5)
                         ?costmap)))
+
+;; TODO
+;; (perform (vector (make-designator :action `((:operator :busy-genius)
+;;                                    (:type :moving)
+;;                                    (:actor :blue-wasp)
+;;                                    (:goal ,(make-designator :location `((:right "rock07")
+;;                                                                         (:to "tree01")
+;;                                                                         (:reference-frame pose-stamped-by-human))))))
+;;          (make-designator :action `((:operator :busy-genius)
+;;                                    (:type :taking-picture)
+;;                                    (:actor :blue-wasp)))))
+;; progn (perform act1)
+;; progn (perform act2)
+;; cpl:seq (perform act1)
+;;         (perform act2)
+
+;; DONE
+;; (vector (action (:action_type :move)
+;;                 (vector (propkeys (spatial_relation :right)
+;;                                   (language_object :tree)
+                                  
+
+;;                                   (:loc ,(make-designator :location `((:right "rock")
+;;                                                                        (:to "tree"))))\
+;;                                    (:flag 
+;;                          (make-designator :action `((:operator :busy-genius)
+;;                                                     (:type :taking-picture)
+;;                                                     (:actor :blue-wasp))))

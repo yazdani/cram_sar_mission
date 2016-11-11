@@ -50,10 +50,11 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	    {
 	      desig.action_type.data = without_commas[0]+"-picture";
 	      std_msgs::String str;
-	      str.data =  without_commas[5];
+	      str.data =  without_commas[6];
 	      prop.spatial_relation = str; 
-	      prop.language_object.data =  without_commas[6];
-	      prop.flag.data = without_commas[7];
+	      prop.property.data = without_commas[7];
+	      prop.language_object.data =  without_commas[8];
+	      prop.flag.data = without_commas[9];
 	      prop.pointing_gesture.x = 0;
 	      prop.pointing_gesture.y = 0;
 	      prop.pointing_gesture.z = 0;
@@ -65,16 +66,18 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	      std_msgs::String str;
 	      str.data = without_commas[1];
 	      prop.spatial_relation = str; 
-	      prop.language_object.data = without_commas[2];
-	      prop.flag.data = without_commas[3];
+	      prop.property.data = without_commas[2];
+	      prop.language_object.data = without_commas[3];
+	      prop.flag.data = without_commas[4];
 	      prop.pointing_gesture.x = 0;
 	      prop.pointing_gesture.y = 0;
 	      prop.pointing_gesture.z = 0;
 	      props.push_back(prop);
-	      str.data = without_commas[5];
+	      str.data = without_commas[6];
 	      prop.spatial_relation = str; 
-	      prop.language_object.data = without_commas[6];
-	      prop.flag.data = without_commas[7];
+	      prop.property.data = without_commas[7];
+	      prop.language_object.data = without_commas[8];
+	      prop.flag.data = without_commas[9];
 	      prop.pointing_gesture.x = 0;
 	      prop.pointing_gesture.y = 0;
 	      prop.pointing_gesture.z = 0;
@@ -99,15 +102,23 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 		  prop.spatial_relation.data = without_commas[1];
 		}
 
-	      if(without_commas[2].compare("picture") == 0)
+	      if(without_commas[3].compare("picture") == 0)
 		{
 		  prop.language_object.data = "null";
 		}else
 		{
-		  prop.language_object.data = without_commas[2];
+		  prop.language_object.data = without_commas[3];
+		}
+	     
+	      if(without_commas[2].compare("empty") == 0)
+		{
+		  prop.property.data = "null";
+		}else
+		{
+		  prop.property.data = without_commas[2];
 		}
 
-	      prop.flag.data = without_commas[3];
+	      prop.flag.data = without_commas[4];
 	        
 
 	      prop.pointing_gesture.x = 0;
@@ -127,14 +138,22 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 		  prop.spatial_relation.data = without_commas[1];
 		}
 
-	      if(without_commas[2].compare("picture") == 0)
+	      if(without_commas[3].compare("picture") == 0)
 		{
 		  prop.language_object.data = "null";
 		}else
 		{
-		  prop.language_object.data = without_commas[2];
+		  prop.language_object.data = without_commas[3];
 		}
-	      prop.flag.data = without_commas[3];
+
+	      if(without_commas[2].compare("picture") == 0)
+		{
+		  prop.property.data = "null";
+		}else
+		{
+		  prop.property.data = without_commas[2];
+		}
+	      prop.flag.data = without_commas[4];
 	      prop.pointing_gesture.x = 0;
 	      prop.pointing_gesture.y = 0;
 	      prop.pointing_gesture.z = 0;
@@ -148,11 +167,11 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
     }
   if(desigs.size() > 1)
     {
-      ROS_INFO_STREAM(desigs[0]);
-      ROS_INFO_STREAM(desigs[1]); 
+      //      ROS_INFO_STREAM(desigs[0]);
+      //      ROS_INFO_STREAM(desigs[1]); 
     }else
     {
-      ROS_INFO_STREAM(desigs[0]);
+      //      ROS_INFO_STREAM(desigs[0]);
     }
  return desigs;
 }
@@ -180,7 +199,7 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
 
   desigs = stringToDesigMsg(srv.response.result);
   ROS_INFO_STREAM("TEST2");
-
+  
   ros::NodeHandle ncram_client;
   instructor_mission::HMIDesig cram_srv;
  
