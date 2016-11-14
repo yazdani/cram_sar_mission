@@ -59,7 +59,6 @@
                             (semantic-desig (filling-desigs-with-semantics
                                              viewpoint
                                              (desig-prop-value  (nth incr created_desigs) :goal)))
-                            ;;(position (reference-by-agent-frame semantic-desig viewpoint))
                             (actiondesig (make-designator :action `((:type ,action)
                                                                     (:actor ,actor)
                                                                     (:viewpoint ,viewpoint)
@@ -115,8 +114,8 @@
                      keys))
 
 (defun get-human-elem-pose (object-name)
-  (format t "object-name ~a~%" object-name)
- (setf cram-tf:*fixed-frame* "human")
+  ;;(format t "object-name ~a~%" object-name)
+ ;;(setf cram-tf:*fixed-frame* "human")
   (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* "human" (format NIL "~a_link" object-name))))
 
 ;;client-service to gazebo: move quadrotor

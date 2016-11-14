@@ -152,36 +152,23 @@
    type))
 
 (defun reference-by-agent-frame (desig robotname)
-(format t " und ~a und ~a~%" desig robotname)
   (let*((result NIL)
         (cam (cam-depth-tf-transform))
         (temp NIL)
         (tmp NIL)
-        (tom NIL))
-        (setf objname (second (first (last (desig:properties desig)))))
-    (format t "objname ~a~%" objname)
+        (tom NIL)(objname (second (first (last (desig:properties desig))))))
     (if (string-equal "human" robotname)
         (setf cram-tf:*fixed-frame* robotname)
         (setf cram-tf:*fixed-frame* "base_link"))
     (cond((not(equal NIL desig))
-               (format t "result2 ~a~%" result)
           (setf result (reference desig))
-          (format t "result ~a~%" result)
           (setf temp (look-at-object-x (cl-transforms:make-pose (cl-transforms:origin (cl-transforms-stamped:pose-stamped->pose result)) (cl-transforms:orientation (cl-transforms:transform->pose cam)))  (get-human-elem-pose objname)))
-           (format t "temp ~a~%" temp)
           (setf *obj-pose* (get-elem-pose objname))
-          (format t "*obj-pose* ~a~%" *obj-pose*)
           (setf tmp (cl-transforms-stamped:make-pose-stamped "human"
                                                              0.0 (cl-transforms:origin temp)
                                                              (cl-transforms:orientation temp)))
-          (format t "tmp ~a~%" tmp)
-
-         (setf tom (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose tmp :target-frame "map")))
-          (format t "tom ~a~%" tom)
-
-          )  
-         (t ()))
-  (setf cram-tf:*fixed-frame* "map")
+          (setf tom (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose tmp :target-frame "map")))))  
+    (setf cram-tf:*fixed-frame* "map")
     tom))
 
 
@@ -363,131 +350,132 @@ quadrotor, so the rotation is on x-axis"
    (first (split-sequence:split-sequence #\: elem))))
         
 
-(defun filling-desigs-with-semantics (viewpoint loc)
-  (format t "loc ~a~%" loc)
-   (let ((desig-properties (desig:properties loc))
+(defun filling-desigs-with-semantics (viewpoint location-designator)
+  (let ((desig-properties (desig:properties location-designator))
          (desig NIL))
      ;;if property-list includes one key,e.g. ((:property small)(:right tree))
      (cond ((= 1 (length desig-properties))
-            (setf desig (intern-property-list-one viewpoint (first desig-properties))))
+            (setf desig (one-list-internal-property viewpoint (first desig-properties))))
            ((= 2 (length desig-properties))
-            (setf desig (intern-property-list-two viewpoint desig-properties)))
+            (setf desig (two-lists-internal-property viewpoint desig-properties)))
            ((= 3 (length desig-properties))
             (setf desig (intern-property-list-three viewpoint desig-properties))))
-     (format t "desig ~a~%" desig)
-     desig))
+   desig))
 
-(defun intern-property-list-one (perspective properties)
-  (format t "teeest~%")
+;;location (((right tree)(color null)(size null)(num null)))
+(defun one-list-internal-property (viewpoint properties)
   (let((e-elem NIL)
        (liste NIL))
-    (format t "properties ~a~%"properties)
-  (cond ((not (null (get-elem-pose (second (first properties)))))
-         (setf e-elem (second (first properties))))
-        (t (format t "kein name ~%")
-         (cond ((and (string-equal "null" (second (second properties)))
-                     (string-equal "null" (second (third properties)))
-                     (string-equal "null" (second (fourth properties))))
-                (format t "perspective ~a~%" perspective)
-                  (if (string-equal perspective "human")
-                      (setf e-elem (get-value-basedon-type->get-objects-infrontof-human (second (first properties))))
-                      (setf e-elem (get-value-basedon-type->get-objects-infrontof-agent (second (first properties))))))
+    ;;if elem is a name
+  (if (not (null (get-elem-pose (second (first properties)))))
+       (setf e-elem (second (first properties)))
+       (cond ((and (string-equal "null" (second (second properties)))
+                   (string-equal "null" (second (third properties)))
+                   (string-equal "null" (second (fourth properties))))
+              (setf e-elem (get-elem-by-type->get-objects-infrontof-agent
+                            (second (first properties))
+                            viewpoint)))
+               ;;size  
                ((not (string-equal "null" (second (third properties))))
-                  (if (string-equal perspective "human")
-                      (setf e-elem (get-value-basedon-property->get-objects-infrontof-human (second (first properties)) (second (third properties))))
-                      (setf e-elem (get-value-basedon-property->get-objects-infrontof-agent (second (first properties)) (second (third properties)))))))))
-    (format t "elem ~a~%" e-elem)
-         (setf liste (list (list (first (first properties)) e-elem)))
-    (format t "liste ~a~%" liste)
-         (make-designator :location liste)))
+                (setf e-elem (get-elem-by-size->get-objects-infrontof-agent (second (first properties)) (second (third properties)) viewpoint)))
+               ;;color
+               ((not (string-equal "null" (second (second properties))))
+                (format NIL "~%"))
+                ;;(setf e-elem (get-elem-by-color->get-objects-infrontof-agent (second (first properties)) (second (second properties)) viewpoint)))
+               ;;num
+               ((not (string-equal "null" (second (fourth properties))))
+                (format NIL "~%"))))
+    ;;(format t "elem ~a~%" e-elem)
+    (if (null e-elem)
+        (setf e-elem "tree01"))
+    (setf liste (list (list (first (first properties)) e-elem)))
+    (make-designator :location liste)))
 
-
-(defun intern-property-list-two (perspective properties)
-   (format t "teeest2~%")
-   (let((e-elem NIL)(z-elem NIL)
-        (liste NIL)
-        (property1 (first properties))
-        (property2 (second properties)))
+;;location (((right tree)(color null)(size null)(num null))
+;;          ((right rock)(color null)(size null)(num null)))
+(defun two-lists-internal-property (viewpoint properties)
+  (let((e-elem NIL)(z-elem NIL)
+       (liste NIL)
+       (property1 (first properties))
+       (property2 (second properties)))
      ;;if both include names
      (cond ((and (not (null (get-elem-pose (second (first property1)))))
                  (not (null (get-elem-pose (second (first property2))))))
             (setf liste (list (list (first (second property1)) e-elem)
                               (list (first (second property2)) z-elem))))
-           ;;if first have a name and second not and shape is not null
+           ;;if first have a name and second not
            ((and (not (null (get-elem-pose (second (first property1)))))
                  (null (get-elem-pose (second (second property2)))))
             (cond ((and (string-equal "null" (second (second property2)))
                         (string-equal "null" (second (third property2)))
                         (string-equal "null" (second (fourth property2))))
                    (setf e-elem (second (first property1)))
-                   (setf z-elem (calculate-the-specific-object 
+                   (setf z-elem (calculate-second-object-basedon-objectname 
                                  e-elem
                                  (first (first property1))
                                  (second (second property2)))))
+                  ;;size
                   ((not (string-equal "null" (second (third property2))))
                    (setf e-elem (second (first property1)))
-                   (setf z-elem (calculate-the-specific-object-with-shape 
+                   (setf z-elem (calculate-object-by-size-nextto-objectname 
                                  e-elem
                                  (first (first property1))
                                  (second (first property2))
-                                 (second (third property2))))
-                   (setf liste (list (list (first (second property1)) e-elem)
-                                     (list (first (second property2)) z-elem))))))
-           ;;if second have a name and first not and shape is null
+                                 (second (third property2)))))
+                  ;;color
+                  ((not (string-equal "null" (second (second property2))))
+                   (format NIL "TODO ~%"))
+                  ;;num
+                  ((not (string-equal "null" (second (fourth property2))))
+                   (format NIL "TODO ~%"))))
+           ;;if second have a name and first not
            ((and (null (get-elem-pose (second (first property1))))
                  (not (null (get-elem-pose (second (first property2))))))
             (cond ((and (string-equal "null" (second (second property1)))
                         (string-equal "null" (second (third property1)))
                         (string-equal "null" (second (fourth property1))))
-                   (setf e-elem (get-objname-based-on-property-and-objname2
+                   (setf e-elem (get-objname-based-on-spatial-and-objname2
                                  (first (first property1)) 
                                  (second (first property1))
                                  (second (second property2))))
                    (setf z-elem (second (second property2))))
-                  ((not (string-equal "null" (second (third property1))))                  
-                   (setf e-elem (get-objname-based-on-property-and-objname2-and-shape 
+                  ((not (string-equal "null" (second (third property1))))                           (setf e-elem (get-objname-based-on-property-and-objname2-and-size 
                           (first (first property1))
                           (second (first property1))
                           (second (first property2))                         
                           (second (third property1))))
-                   (setf z-elem (second (first property2))))))
+                   (setf z-elem (second (first property2))))
+                  ;;color
+                  ((not (string-equal "null" (second (second property2))))
+                   (format NIL "TODO ~%"))
+                  ;;num
+                  ((not (string-equal "null" (second (fourth property2))))
+                   (format NIL "TODO ~%")))) 
            ;;if both have not names
-                  ;; both have properties
-                  (t(format t "thiiaaa ~%")
-                   (setf liste (get-objs-based-on-relation-towards-other-obj
-                          (second (first property2))
-                          (first (first property1))
-                          (second (first property1))))
-                   (setf e-elem (first liste))
-                   (setf z-elem (second liste))
-
-
-                   ;; (cond ((and (not (string-equal "null" (second (third property1)))))
-                     ;;             (not (string-equal "null" (second (third property2)))))
-                     ;;       (format t "todo~%"))
-                     ;; ((and (string-equal "null" (second (third property1)))
-                     ;;       (not (string-equal "null" (second (third property2)))))
-                     ;;  )
-                     ;; ((and (not (string-equal "null" (second (third property1))))
-                     ;;       (string-equal "null" (second (third property2))))
-                     ;;  )
-                     ;; ((and (string-equal "null" (second (third property1)))
-                     ;;       (string-equal "null" (second (third property2))))
-                     ;;  )
-                     ))
-     (setf liste (list (list (first (first property1)) e-elem)
-                       (list (first (first property2)) z-elem)))       
-     (make-designator :location liste)))
-
-;;             (setf liste (get-objs-based-on-relation-towards-other-obj
-;;                          (second (second property2))
-;;                          (first (second property1))
-;;                          (second (second property1))))
-;;             (setf e-elem (first liste))
-;;             (setf z-elem (second liste))
-;;             (setf liste (list (list (first (second property1)) e-elem)
-;;                               (list (first (second property2)) z-elem)))))
-;;      (make-designator :location liste)))
+                  (t (cond ((and (string-equal "null" (second (second property1)))
+                                 (string-equal "null" (second (third property1)))
+                                 (string-equal "null" (second (fourth property1)))
+                                 (string-equal "null" (second (second property2)))
+                                 (string-equal "null" (second (third property2)))
+                                 (string-equal "null" (second (fourth property2))))
+                            (setf liste (get-objs-based-on-relation-towards-other-obj
+                                         (second (first property2))
+                                         (first (first property1))
+                                         (second (first property1))))
+                            (setf e-elem (first liste))
+                            (setf z-elem (second liste)))
+                           ;;size
+                           ((not (string-equal "null" (second (third property1))))
+                            (format NIL "TODO ~%"))
+                            ;;color
+                           ((not (string-equal "null" (second (second property2))))
+                            (format NIL "TODO ~%"))
+                           ;;num
+                           ((not (string-equal "null" (second (fourth property2))))
+                            (format NIL "TODO ~%")))))
+    (setf liste (list (list (first (first property1)) e-elem)
+                      (list (first (first property2)) z-elem)))       
+    (make-designator :location liste)))
 
 (defun intern-property-list-three (perspective properties)
    (format t "teeest3~%")
