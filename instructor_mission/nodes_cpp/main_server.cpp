@@ -14,8 +14,11 @@
 #include <cstdlib>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
+#include <cstddef>    
 
 using namespace std;
+std::string find_agent;
+
 std::vector<string> splitString(string input, string delimiter)
 {
   std::vector<string> output;
@@ -23,9 +26,10 @@ std::vector<string> splitString(string input, string delimiter)
   split(output, input, boost::is_any_of(delimiter), boost::token_compress_on);
   return output;
 }
+
 std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 {
-  ROS_INFO_STREAM("words: "+words);
+  //ROS_INFO_STREAM("words: "+words);
   std::vector<string> without_zeros = splitString(words,"0");
   std::vector <instructor_mission::Desig> desigs;
 
@@ -43,135 +47,107 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
  
       // bool x = std::find(without_commas.begin(), without_commas.end(),"repeat") != without_commas.end();
       // ROS_INFO_STREAM(x);
-      if(std::find(without_commas.begin(), without_commas.end(),"repeat") != without_commas.end())
+      if(std::find(without_commas.begin(), without_commas.end(),"repeat") != without_commas.end()) //ein repeat
        {
-
-	  if(without_commas[0].compare("take") == 0)
+	 // ROS_INFO_STREAM("test without_commas[0] "+without_commas[0]);
+	 if(without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	    {
 	      desig.action_type.data = without_commas[0]+"-picture";
-	      std_msgs::String str;
-	      str.data =  without_commas[6];
-	      prop.spatial_relation = str; 
-	      prop.property.data = without_commas[7];
-	      prop.language_object.data =  without_commas[8];
-	      prop.flag.data = without_commas[9];
-	      prop.pointing_gesture.x = 0;
-	      prop.pointing_gesture.y = 0;
-	      prop.pointing_gesture.z = 0;
-	      props.push_back(prop);
-	      desig.propkeys = props;
+	      desig.instructor.data = find_agent;//instructor;
+	      desig.viewpoint.data = "human";//viewpoint;
+	      prop.object_relation.data = "null";
 	    }else
 	    {
 	      desig.action_type.data = without_commas[0];
-	      std_msgs::String str;
-	      str.data = without_commas[1];
-	      prop.spatial_relation = str; 
-	      prop.property.data = without_commas[2];
-	      prop.language_object.data = without_commas[3];
-	      prop.flag.data = without_commas[4];
-	      prop.pointing_gesture.x = 0;
-	      prop.pointing_gesture.y = 0;
-	      prop.pointing_gesture.z = 0;
-	      props.push_back(prop);
-	      str.data = without_commas[6];
-	      prop.spatial_relation = str; 
-	      prop.property.data = without_commas[7];
-	      prop.language_object.data = without_commas[8];
-	      prop.flag.data = without_commas[9];
-	      prop.pointing_gesture.x = 0;
-	      prop.pointing_gesture.y = 0;
-	      prop.pointing_gesture.z = 0;
-	      props.push_back(prop);
-	      desig.propkeys = props;
+	      desig.instructor.data = find_agent;//instructor;
+	      desig.viewpoint.data = "human";//viewpoint;
+	      prop.object_relation.data = without_commas[1];
+	    }
+	 //Go to your LEFT  => move(to,robot(left))
+	 if(without_commas[2].compare("left") == 0 || without_commas[2].compare("right") == 0)
+	   {
+	     prop.object_relation.data = without_commas[2];
+	     prop.object_entity.data = "null";
+	   }else
+	   {
+	     prop.object_entity.data = without_commas[2];
 	   }
+	 prop.object_color.data =  without_commas[3];
+	 prop.object_size.data = without_commas[4];
+	 prop.object_num.data = without_commas[5];
+	 prop.flag.data = without_commas[6];
+	 prop.pointing_gesture.x = 0;
+	 prop.pointing_gesture.y = 0;
+	 prop.pointing_gesture.z = 0;
+	 props.push_back(prop);
+	 prop.object_relation.data = without_commas[9];
+	 if(without_commas[10].compare("left") == 0 || without_commas[10].compare("right") == 0)
+	   {
+	     prop.object_relation.data = without_commas[10];
+	     prop.object_entity.data = "null";
+	   }else
+	   {
+	     prop.object_entity.data = without_commas[10];
+	   }
+	 // prop.object_entity.data = without_commas[10];
+	 prop.object_color.data =  without_commas[11];
+	 prop.object_size.data = without_commas[12];
+	 prop.object_num.data = without_commas[13];
+	 prop.flag.data = without_commas[14];
+	 prop.pointing_gesture.x = 0;
+	 prop.pointing_gesture.y = 0;
+	 prop.pointing_gesture.z = 0;
+	 props.push_back(prop);
+	 desig.propkeys = props;
+       
 
        }else
 	{
-	  if(without_commas[0].compare("take") == 0)
+
+	 //take,pic,tree,null,null,null,false0
+	  // ROS_INFO_STREAM("without_commas[0] "+without_commas[0]);
+	  if(without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	    {
-	  
 	      desig.action_type.data = without_commas[0]+"-picture";
-	      std_msgs::String str;
-	      str.data = "null";
-	      prop.spatial_relation = str; 
-	      if(without_commas[1].compare("nil") == 0 || without_commas[1].compare("picture") == 0 )
-		{
-		  prop.spatial_relation.data = "null";
-		}else
-		{
-		  prop.spatial_relation.data = without_commas[1];
-		}
-
-	      if(without_commas[3].compare("picture") == 0)
-		{
-		  prop.language_object.data = "null";
-		}else
-		{
-		  prop.language_object.data = without_commas[3];
-		}
-	     
-	      if(without_commas[2].compare("empty") == 0)
-		{
-		  prop.property.data = "null";
-		}else
-		{
-		  prop.property.data = without_commas[2];
-		}
-
-	      prop.flag.data = without_commas[4];
-	        
-
-	      prop.pointing_gesture.x = 0;
-	      prop.pointing_gesture.y = 0;
-	      prop.pointing_gesture.z = 0;
-	      props.push_back(prop);
-	      desig.propkeys = props;
+	      desig.instructor.data = find_agent;//instructor;
+	      desig.viewpoint.data = "human";//viewpoint;
+	      prop.object_relation.data = "null";
 	    }else
 	    {
-
 	      desig.action_type.data = without_commas[0];
-	      if(without_commas[1].compare("nil") == 0 || without_commas[1].compare("picture") == 0 )
-		{
-		  prop.spatial_relation.data = "null";
-		}else
-		{
-		  prop.spatial_relation.data = without_commas[1];
-		}
-
-	      if(without_commas[3].compare("picture") == 0)
-		{
-		  prop.language_object.data = "null";
-		}else
-		{
-		  prop.language_object.data = without_commas[3];
-		}
-
-	      if(without_commas[2].compare("picture") == 0)
-		{
-		  prop.property.data = "null";
-		}else
-		{
-		  prop.property.data = without_commas[2];
-		}
-	      prop.flag.data = without_commas[4];
-	      prop.pointing_gesture.x = 0;
-	      prop.pointing_gesture.y = 0;
-	      prop.pointing_gesture.z = 0;
-	      props.push_back(prop);
-	      desig.propkeys = props;
+	      desig.instructor.data = find_agent;//instructor;
+	      desig.viewpoint.data = "human";//viewpoint;
+	      prop.object_relation.data = without_commas[1];
+	    }
+	  if(without_commas[2].compare("left") == 0 || without_commas[2].compare("right") == 0)
+	   {
+	     prop.object_relation.data = without_commas[2];
+	     prop.object_entity.data = "null";
+	   }else
+	   {
+	     prop.object_entity.data = without_commas[2];
 	   }
-       }
-
+	  // prop.object_entity.data = without_commas[2];
+	  prop.object_color.data =  without_commas[3];
+	  prop.object_size.data = without_commas[4];
+	  prop.object_num.data = without_commas[5];
+	  prop.flag.data = without_commas[6];
+	  prop.pointing_gesture.x = 0;
+	  prop.pointing_gesture.y = 0;
+	  prop.pointing_gesture.z = 0;
+	  props.push_back(prop);
+	  desig.propkeys = props;
+	}
 	 desigs.push_back(desig);
 	 
     }
   if(desigs.size() > 1)
     {
-      //      ROS_INFO_STREAM(desigs[0]);
-      //      ROS_INFO_STREAM(desigs[1]); 
+        ROS_INFO_STREAM(desigs[0]);
+        ROS_INFO_STREAM(desigs[1]); 
     }else
     {
-      //      ROS_INFO_STREAM(desigs[0]);
+          ROS_INFO_STREAM(desigs[0]);
     }
  return desigs;
 }
@@ -184,7 +160,24 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
   ros::NodeHandle n_client;
   instructor_mission::text_parser srv;
   ros::ServiceClient client = n_client.serviceClient<instructor_mission::text_parser>("/ros_parser");
-  srv.request.goal = req.goal;
+  std::string received_highlevel_cmd = req.goal;
+  std::size_t found = req.goal.find_first_of(",");
+  if(found!=std::string::npos) //We are checking if a specific robot was called
+    {
+      find_agent = received_highlevel_cmd.substr(0,received_highlevel_cmd.find(","));
+      // ROS_INFO_STREAM("find_agent: "+find_agent);
+      std::string parsed_cmd00 = received_highlevel_cmd.substr(received_highlevel_cmd.find(", "),received_highlevel_cmd.size());
+      std::string parsed_cmd01 = parsed_cmd00.substr(1,parsed_cmd00.size());
+      // ROS_INFO_STREAM("parsed_cmd00"+parsed_cmd00);
+      // ROS_INFO_STREAM("parsed_cmd01"+parsed_cmd01);
+      srv.request.goal = parsed_cmd01;
+    }else
+    {
+      //  ROS_INFO_STREAM("req.goal: "+req.goal);
+      find_agent = "robot";
+      srv.request.goal = req.goal;
+    }
+
   if (client.call(srv))
      {
      	ROS_INFO_STREAM("Waiting for the TLDL parser");
@@ -196,7 +189,6 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
       }
   std::vector<instructor_mission::Desig> desigs;
   instructor_mission::Desig desig;
-
   desigs = stringToDesigMsg(srv.response.result);
   ROS_INFO_STREAM("TEST2");
   

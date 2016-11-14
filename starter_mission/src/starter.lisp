@@ -32,48 +32,55 @@
   (roslisp-utilities:startup-ros ))
 
 ;; ROSSERVICE FOR DOING REASONING
-
 (defun start_reasoning_service ()
-(hmidesig-call))
- ;; (reasoning-call))
+  (hmidesig-call))
 
-
+;; DEFINITION OF ROSSERVICE SERVER FOR CRAM
 (defun hmidesig-call ()
  (roslisp-utilities:startup-ros :name "start_hmidesig_service")
   (roslisp:register-service "service_cram_reasoning" 'instructor_mission-srv:HMIDesig)
   (roslisp:ros-info (basics-system) "start hmireasoning service")
- (roslisp:spin-until nil 1000))
+  (roslisp:spin-until nil 1000))
 
+;; This function generates out of a highlevel-instruction the cram-designator
+;; and fill it with specific values coming from the semantic map.
+;; Besides of semantical annotated objects, this function is also logging the
+;; high-level designator
 (roslisp:def-service-callback instructor_mission-srv::HMIDesig (desigs)
   (let ((id  (beliefstate:start-node "INTERPRET-INSTRUCTION-DESIGNATOR" NIL 2))
         (newliste '())
-        (logged_desigs (create-logged-designator desigs)))
-    (format t "create logged work with~a~%" logged_desigs)
-    (cond ((not (null (length logged_desigs)))
-           (dotimes (incr (length logged_desigs))
-             do (cond((not (null (desig-prop-value (nth incr logged_desigs) :loc)))
-                      (let*((design (fill-desig-property-list (first (desig-prop-values
-                                                               (nth incr logged_desigs) :perspective))
-                                                              (desig-prop-value  (nth incr logged_desigs) :loc)))
-                            (actionprop  (desig-prop-value (nth incr logged_desigs) :type))
-                            (actiondesig (make-designator :action `((:type ,actionprop)
-                                                                    (:loc ,design))))
-                            (position (reference-by-human-frame design (second (first (last (desig:properties design)))))))
-                        (setf newliste (append newliste (list  (make-designator :action `((:type ,actionprop)
-                                                                                          (:loc ,position))))))
-                       ;; (format t "wuaaat ~a~%" (nth incr logged_desigs))
-                        (beliefstate:add-designator-to-active-node (nth incr logged_desigs))
-                       ;;  (format t "wuaaat3 ~a~%" actiondesig)
+        (created_desigs (create-cram-designator-based-on-msgs desigs)))
+    (cond ((not (null (length created_desigs)))
+           (dotimes (incr (length created_desigs))
+             do (cond((not (null (desig-prop-value (nth incr created_desigs) :goal)))
+                      (let*((action (desig-prop-value (nth incr created_desigs) :type))
+                            (actor  (desig-prop-value (nth incr created_desigs) :actor))
+                            (viewpoint  (desig-prop-value (nth incr created_desigs) :viewpoint))
+                            (semantic-desig (filling-desigs-with-semantics
+                                             viewpoint
+                                             (desig-prop-value  (nth incr created_desigs) :goal)))
+                            ;;(position (reference-by-agent-frame semantic-desig viewpoint))
+                            (actiondesig (make-designator :action `((:type ,action)
+                                                                    (:actor ,actor)
+                                                                    (:viewpoint ,viewpoint)
+                                                                    (:goal, semantic-desig))))
+                            (position (reference-by-agent-frame semantic-desig viewpoint)))
+                        (setf newliste (append newliste (list  (make-designator :action `((:type ,action)
+                                                                                          (:actor ,actor)
+                                                                                          (:viewpoint ,viewpoint)
+                                                                                          (:goal ,position))))))
+                        (beliefstate:add-designator-to-active-node (nth incr created_desigs))
                         (beliefstate:add-designator-to-active-node actiondesig)
-                       ;;  (format t "wuaaat4 ~%")
-                        (beliefstate:add-designator-to-active-node (make-designator :action `((:type ,actionprop)
-                                                                                          (:loc ,position))))))
-                     (t (setf newliste (append newliste (list (nth incr logged_desigs))))
-                        (beliefstate:add-designator-to-active-node (nth incr logged_desigs))))))
+                        (beliefstate:add-designator-to-active-node (make-designator :action `((:type ,action)
+                                                                                              (:actor ,actor)
+                                                                                              (:viewpoint ,viewpoint)
+                                                                                              (:goal ,position))))))
+                     (t (setf newliste (append newliste (list (nth incr created_desigs))))
+                        (beliefstate:add-designator-to-active-node (nth incr created_desigs))))))
           (t (setf newliste NIL)))
     (beliefstate:stop-node id)
     (beliefstate:extract-files :name "INTERPRET-INSTRUCTION-DESIGNATOR")
-   ;; (format t "wuaaat ~a~%" newliste)
+    (format t "hieeeer ~a ~%" newliste)
     (gazebo-functions newliste))
     (roslisp:make-response :result "Done!")) 
    

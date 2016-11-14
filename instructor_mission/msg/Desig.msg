@@ -1,4 +1,5 @@
 std_msgs/String action_type
-std_msgs/String agent_perspective
+std_msgs/String instructor
+std_msgs/String viewpoint
 Propkey[] propkeys
 

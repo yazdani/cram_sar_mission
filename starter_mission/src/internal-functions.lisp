@@ -145,30 +145,41 @@
                     ((or (string-equal type "tree")
                          (string-equal type "bigtree")
                          (string-equal type "biggesttree"))
-                    (setf type "bigtree"))))))
+                    (setf type "bigtree"))
+                    ((string-equal type "hugerock")
+                     (setf type "bigrock"))
+                    ))))
    type))
 
-(defun reference-by-human-frame (desig objname)
-;;(format t " und ~a und ~a~%" desig objname)
+(defun reference-by-agent-frame (desig robotname)
+(format t " und ~a und ~a~%" desig robotname)
   (let*((result NIL)
         (cam (cam-depth-tf-transform))
         (temp NIL)
         (tmp NIL)
         (tom NIL))
-    (setf cram-tf:*fixed-frame* "human")
+        (setf objname (second (first (last (desig:properties desig)))))
+    (format t "objname ~a~%" objname)
+    (if (string-equal "human" robotname)
+        (setf cram-tf:*fixed-frame* robotname)
+        (setf cram-tf:*fixed-frame* "base_link"))
     (cond((not(equal NIL desig))
+               (format t "result2 ~a~%" result)
           (setf result (reference desig))
-        ;;  (if (equal *puby* NIL)
-          ;;    ()
-           ;;   (remove-local-tf-publisher *puby*))     
+          (format t "result ~a~%" result)
           (setf temp (look-at-object-x (cl-transforms:make-pose (cl-transforms:origin (cl-transforms-stamped:pose-stamped->pose result)) (cl-transforms:orientation (cl-transforms:transform->pose cam)))  (get-human-elem-pose objname)))
+           (format t "temp ~a~%" temp)
           (setf *obj-pose* (get-elem-pose objname))
+          (format t "*obj-pose* ~a~%" *obj-pose*)
           (setf tmp (cl-transforms-stamped:make-pose-stamped "human"
                                                              0.0 (cl-transforms:origin temp)
                                                              (cl-transforms:orientation temp)))
+          (format t "tmp ~a~%" tmp)
 
-          (setf tom (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose tmp :target-frame "map"))))  
-        ;;(setf *puby* (create-local-tf-publisher tom "test")))
+         (setf tom (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose tmp :target-frame "map")))
+          (format t "tom ~a~%" tom)
+
+          )  
          (t ()))
   (setf cram-tf:*fixed-frame* "map")
     tom))
@@ -352,117 +363,134 @@ quadrotor, so the rotation is on x-axis"
    (first (split-sequence:split-sequence #\: elem))))
         
 
-(defun fill-desig-property-list (perspective loc)
-  (format t "loc is ~a~%" loc)
+(defun filling-desigs-with-semantics (viewpoint loc)
+  (format t "loc ~a~%" loc)
    (let ((desig-properties (desig:properties loc))
          (desig NIL))
      ;;if property-list includes one key,e.g. ((:property small)(:right tree))
      (cond ((= 1 (length desig-properties))
-            (setf desig (intern-property-list-one perspective (first desig-properties))))
+            (setf desig (intern-property-list-one viewpoint (first desig-properties))))
            ((= 2 (length desig-properties))
-            (setf desig (intern-property-list-two perspective desig-properties)))
+            (setf desig (intern-property-list-two viewpoint desig-properties)))
            ((= 3 (length desig-properties))
-            (setf desig (intern-property-list-three perspective desig-properties))))
+            (setf desig (intern-property-list-three viewpoint desig-properties))))
+     (format t "desig ~a~%" desig)
      desig))
 
 (defun intern-property-list-one (perspective properties)
+  (format t "teeest~%")
   (let((e-elem NIL)
        (liste NIL))
     (format t "properties ~a~%"properties)
-  (cond ((not (or (string-equal "null" (second (first properties)))
-                  (string-equal "empty" (second (first properties)))))
-         (format t "teeeesdt ~a~%" (second (first properties)))
-         (if (null (get-elem-pose (second (second properties))))
-           ;;  (if (string-equal "human" perspective)
-             (setf e-elem (get-value-basedon-property->get-objects-infrontof-human (second (first properties))))
-                ;; (setf e-elem (get-value-basedon-property->get-objects-infrontof-human (second (first properties)))))
-             (setf e-elem (second (second properties))))
-         (setf liste (list (list (first (second properties)) e-elem))))          
-        (t
-         ;;if tree is the type not name calculate nearest obj else proceed with name
-         (if (null (get-elem-pose (second (second properties))))
-       ;;      (if (string-equal "human" perspective)
-                 (setf e-elem (get-value-basedon-type->get-objects-infrontof-human (second (second properties))))
-              ;;   (setf e-elem (get-value-basedon-property->get-objects-infrontof-human (second (second properties)))))
-             (setf e-elem (second (second properties))))))
-         (setf liste (list (list (first (second properties)) e-elem)))
+  (cond ((not (null (get-elem-pose (second (first properties)))))
+         (setf e-elem (second (first properties))))
+        (t (format t "kein name ~%")
+         (cond ((and (string-equal "null" (second (second properties)))
+                     (string-equal "null" (second (third properties)))
+                     (string-equal "null" (second (fourth properties))))
+                (format t "perspective ~a~%" perspective)
+                  (if (string-equal perspective "human")
+                      (setf e-elem (get-value-basedon-type->get-objects-infrontof-human (second (first properties))))
+                      (setf e-elem (get-value-basedon-type->get-objects-infrontof-agent (second (first properties))))))
+               ((not (string-equal "null" (second (third properties))))
+                  (if (string-equal perspective "human")
+                      (setf e-elem (get-value-basedon-property->get-objects-infrontof-human (second (first properties)) (second (third properties))))
+                      (setf e-elem (get-value-basedon-property->get-objects-infrontof-agent (second (first properties)) (second (third properties)))))))))
+    (format t "elem ~a~%" e-elem)
+         (setf liste (list (list (first (first properties)) e-elem)))
+    (format t "liste ~a~%" liste)
          (make-designator :location liste)))
 
 
 (defun intern-property-list-two (perspective properties)
+   (format t "teeest2~%")
    (let((e-elem NIL)(z-elem NIL)
         (liste NIL)
         (property1 (first properties))
         (property2 (second properties)))
      ;;if both include names
-     (cond ((and (not (null (get-elem-pose (second (second property1)))))
-                 (not (null (get-elem-pose (second (second property2))))))
+     (cond ((and (not (null (get-elem-pose (second (first property1)))))
+                 (not (null (get-elem-pose (second (first property2))))))
             (setf liste (list (list (first (second property1)) e-elem)
                               (list (first (second property2)) z-elem))))
            ;;if first have a name and second not and shape is not null
-           ((and (not (null (get-elem-pose (second (second property1)))))
-                 (null (get-elem-pose (second (second property2))))
-                 (or (not (null  (string-equal "null" (second (first property2)))))
-                     (not (null  (string-equal "empty" (second (first property2)))))))
-                 (setf e-elem (second (second property1)))
-                 (setf z-elem (calculate-the-specific-object-with-shape
-                               e-elem
-                               (first (second property1))
-                               (second (second property2))
-                               (first (first property2))))
-                 (setf liste (list (list (first (second property1)) e-elem)
-                              (list (first (second property2)) z-elem))))
-           ;;if first have a name and second not and shape is null
-           ((and (not (null (get-elem-pose (second (second property1)))))
-                 (null (get-elem-pose (second (second property2))))
-                 (or (null  (string-equal "null" (second (first property2))))
-                     (null  (string-equal "empty" (second (first property2))))))
-                 (setf e-elem (second (second property1)))
-            (setf z-elem (calculate-the-specific-object 
-                               e-elem
-                               (first (second property1))
-                               (second (second property2))))
-            (setf liste (list (list (first (second property1)) e-elem)
-                              (list (first (second property2)) z-elem))))
-            ;;if second have a name and first not and shape is not null
-           ((and (null (get-elem-pose (second (second property1))))
-                 (not (null (get-elem-pose (second (second property2)))))
-                 (or (not (null (string-equal "null" (second (first property1)))))
-                     (not (null  (string-equal "empty" (second (first property1)))))))
-            (setf e-elem (get-objname-based-on-property-and-objname2-and-shape
-                          (first (second property1))
-                          (second (second property1))
-                          (second (second property2))
-                          (second (first property1))))
-            (setf z-elem (second (second property2)))                               
-            (setf liste (list (list (first (second property1)) e-elem)
-                              (list (first (second property2)) z-elem))))
+           ((and (not (null (get-elem-pose (second (first property1)))))
+                 (null (get-elem-pose (second (second property2)))))
+            (cond ((and (string-equal "null" (second (second property2)))
+                        (string-equal "null" (second (third property2)))
+                        (string-equal "null" (second (fourth property2))))
+                   (setf e-elem (second (first property1)))
+                   (setf z-elem (calculate-the-specific-object 
+                                 e-elem
+                                 (first (first property1))
+                                 (second (second property2)))))
+                  ((not (string-equal "null" (second (third property2))))
+                   (setf e-elem (second (first property1)))
+                   (setf z-elem (calculate-the-specific-object-with-shape 
+                                 e-elem
+                                 (first (first property1))
+                                 (second (first property2))
+                                 (second (third property2))))
+                   (setf liste (list (list (first (second property1)) e-elem)
+                                     (list (first (second property2)) z-elem))))))
            ;;if second have a name and first not and shape is null
-           ((and (null (get-elem-pose (second (second property1))))
-                 (not (null (get-elem-pose (second (second property2)))))
-                 (or 
-                  (null (string-equal "null" (second (first property1))))
-                  (null  (string-equal "empty" (second (first property1))))))
-            (setf e-elem (get-objname-based-on-property-and-objname2 
-                          (first (second property1))
-                          (second (second property1))
-                          (second (second property2))))
-            (setf z-elem (second (second property2)))                               
-            (setf liste (list (list (first (second property1)) e-elem)
-                              (list (first (second property2)) z-elem))))
+           ((and (null (get-elem-pose (second (first property1))))
+                 (not (null (get-elem-pose (second (first property2))))))
+            (cond ((and (string-equal "null" (second (second property1)))
+                        (string-equal "null" (second (third property1)))
+                        (string-equal "null" (second (fourth property1))))
+                   (setf e-elem (get-objname-based-on-property-and-objname2
+                                 (first (first property1)) 
+                                 (second (first property1))
+                                 (second (second property2))))
+                   (setf z-elem (second (second property2))))
+                  ((not (string-equal "null" (second (third property1))))                  
+                   (setf e-elem (get-objname-based-on-property-and-objname2-and-shape 
+                          (first (first property1))
+                          (second (first property1))
+                          (second (first property2))                         
+                          (second (third property1))))
+                   (setf z-elem (second (first property2))))))
            ;;if both have not names
-           (t
-            (setf liste (get-objs-based-on-relation-towards-other-obj
-                         (second (second property2))
-                         (first (second property1))
-                         (second (second property1))))
-            (setf e-elem (first liste))
-            (setf z-elem (second liste))
-            (setf liste (list (list (first (second property1)) e-elem)
-                              (list (first (second property2)) z-elem)))))
+                  ;; both have properties
+                  (t(format t "thiiaaa ~%")
+                   (setf liste (get-objs-based-on-relation-towards-other-obj
+                          (second (first property2))
+                          (first (first property1))
+                          (second (first property1))))
+                   (setf e-elem (first liste))
+                   (setf z-elem (second liste))
+
+
+                   ;; (cond ((and (not (string-equal "null" (second (third property1)))))
+                     ;;             (not (string-equal "null" (second (third property2)))))
+                     ;;       (format t "todo~%"))
+                     ;; ((and (string-equal "null" (second (third property1)))
+                     ;;       (not (string-equal "null" (second (third property2)))))
+                     ;;  )
+                     ;; ((and (not (string-equal "null" (second (third property1))))
+                     ;;       (string-equal "null" (second (third property2))))
+                     ;;  )
+                     ;; ((and (string-equal "null" (second (third property1)))
+                     ;;       (string-equal "null" (second (third property2))))
+                     ;;  )
+                     ))
+     (setf liste (list (list (first (first property1)) e-elem)
+                       (list (first (first property2)) z-elem)))       
      (make-designator :location liste)))
 
-(defun intern-property-list-three (properties)
+;;             (setf liste (get-objs-based-on-relation-towards-other-obj
+;;                          (second (second property2))
+;;                          (first (second property1))
+;;                          (second (second property1))))
+;;             (setf e-elem (first liste))
+;;             (setf z-elem (second liste))
+;;             (setf liste (list (list (first (second property1)) e-elem)
+;;                               (list (first (second property2)) z-elem)))))
+;;      (make-designator :location liste)))
+
+(defun intern-property-list-three (perspective properties)
+   (format t "teeest3~%")
  ;; (format t "intern-rpoeprty-three~%")
   (let((e-elem NIL)(z-elem NIL)(d-elem)(property1 (first properties))
        (property2  (second properties)) (property3 (third properties))
@@ -562,179 +590,42 @@ quadrotor, so the rotation is on x-axis"
 
 
 
-    
-
-
-
-
-;; (defun fill-desig-property-list (loc)
-;;    (let ((desig-properties (desig:properties loc))
-;;         (desig NIL)
-;;         (e-elem NIL)(z-elem NIL) (d-elem NIL)
-;;         (liste NIL))
-;;      ;;if property-list includes one key,e.g. ((:right tree))
-;;      (cond ((= 1 (length desig-properties))
-;;             ;;if tree is the type not name calculate nearest obj else proceed with name
-;;             (if (null (get-elem-pose (second (first desig-properties))))
-;;                 (setf e-elem (get-value-basedon-type->get-objects-infrontof-human (second (first desig-properties))))
-;;                 (setf e-elem (second (first desig-properties))))
-;;             (setf liste (list (list (first (first desig-properties)) e-elem)))
-;;             (setf desig (make-designator :location liste)))
-;;            ;;if property-list includes two key,e.g. ((:right tree)(:left rock))
-;;            ((= 2 (length desig-properties))
-;;             ;;if tree is not name and rock is not name calculate both
-;;             (cond ((and (null (get-elem-pose (second (first desig-properties))))
-;;                         (null (get-elem-pose (second (second desig-properties)))))
-;;                    (setf liste (get-objs-based-on-relation-towards-other-obj
-;;                                 (second (second desig-properties))
-;;                                 (first (first desig-properties))
-;;                                 (second (first desig-properties))))
-;;                    (setf e-elem (first liste))
-;;                    (setf z-elem (second liste)))
-;;                   ;;if tree is a type and rock is a name
-;;                   ((and (null (get-elem-pose (second (first desig-properties))))
-;;                         (not (null (get-elem-pose (second (second desig-properties))))))
-;;                    (setf e-elem (get-objname-based-on-property-and-objname2
-;;                                  (first (first desig-properties))
-;;                                  (second (first desig-properties))
-;;                                  (second (second desig-properties))))
-;;                    (setf z-elem (second (second desig-properties))))                                ;;if tree is name and rock is type
-;;                   ((and (not (null (get-elem-pose (second (first desig-properties)))))
-;;                         (null (get-elem-pose (second (second desig-properties)))))
-;;                    (setf e-elem (second (first desig-properties))) 
-;;                    (setf z-elem (calculate-the-specific-object
-;;                                  e-elem
-;;                                  (first (first desig-properties))
-;;                                  (second (second desig-properties)))))
-;;                   ;;if both are names
-;;                   (t (setf e-elem (second (first desig-properties)))
-;;                      (setf z-elem (second (second desig-properties)))))
-;;             (setf liste (list (list (first (first desig-properties)) e-elem)
-;;                               (list (first (second desig-properties)) z-elem)))
-;;            (setf desig (make-designator :location liste)))
-;;            ;; property-list e.g. ((:right tree)(:left rock)(:to house))
-;;            ((= 3 (length desig-properties))
-;;                 ;;if tree, rock and house are not names
-;;             (cond ((and (null (get-elem-pose (second (first desig-properties))))
-;;                         (null (get-elem-pose (second (second desig-properties))))
-;;                         (null (get-elem-pose (second (third desig-properties)))))
-;;                    (setf liste (get-objs-based-on-relation-towards-other-obj
-;;                                 (second (second desig-properties))
-;;                                 (first (first desig-properties))
-;;                                 (second (first desig-properties))))
-;;                    (setf e-elem (first liste))
-;;                    (setf z-elem (second liste))
-;;                    (setf d-elem (calculate-the-specific-object
-;;                                  z-elem
-;;                                  (first (second desig-properties))
-;;                                  (second (third desig-properties)))))
-;;                   ;;if tree is name and the others not
-;;                   ((and (not (null (get-elem-pose (second (first desig-properties)))))
-;;                         (null (get-elem-pose (second (second desig-properties))))
-;;                         (null (get-elem-pose (second (third desig-properties)))))
-;;                    (setf e-elem (second (first desig-properties)))
-;;                    (setf z-elem (calculate-the-specific-object
-;;                                  e-elem
-;;                                  (first (first desig-properties))
-;;                                  (second (second desig-properties))))
-;;                    (setf d-elem (calculate-the-specific-object
-;;                                  z-elem
-;;                                  (first (second desig-properties))
-;;                                  (second (third desig-properties)))))
-;;                   ;;if rock is name and the others not
-;;                    ((and (null (get-elem-pose (second (first desig-properties))))
-;;                          (not (null (get-elem-pose (second (second desig-properties)))))
-;;                         (null (get-elem-pose (second (third desig-properties)))))
-;;                     (setf e-elem (get-objname-based-on-property-and-objname2
-;;                                  (first (first desig-properties))
-;;                                  (second (first desig-properties))
-;;                                  (second (second desig-properties))))
-;;                     (setf z-elem (second (second desig-properties)))
-;;                     (setf d-elem (calculate-the-specific-object
-;;                                   z-elem
-;;                                   (first (second desig-properties))
-;;                                   (second (third desig-properties)))))
-;;                    ;;if house is name and the others not
-;;                     ((and (null (get-elem-pose (second (first desig-properties))))
-;;                           (null (get-elem-pose (second (second desig-properties))))
-;;                           (not (null (get-elem-pose (second (third desig-properties))))))
-;;                      (setf d-elem (second (third desig-properties)))
-;;                      (setf z-elem (get-objname-based-on-property-and-objname2
-;;                                    (first (second desig-properties))
-;;                                    (second (second desig-properties))
-;;                                  d-elem))
-;;                      (setf e-elem (get-objname-based-on-property-and-objname2
-;;                                  (first (first desig-properties))
-;;                                  (second (first desig-properties))
-;;                                  z-elem)))
-;;                     ;; if two first are names
-;;                     ((and (not (null (get-elem-pose (second (first desig-properties)))))
-;;                           (not (null (get-elem-pose (second (second desig-properties)))))
-;;                            (null (get-elem-pose (second (third desig-properties)))))
-;;                      (setf e-elem (second (first desig-properties)))
-;;                      (setf z-elem (second (second desig-properties)))
-;;                      (setf d-elem (calculate-the-specific-object
-;;                                    z-elem
-;;                                    (first (second desig-properties))
-;;                                    (second (third desig-properties)))))
-;;                     ;; if first and third are names
-;;                     ((and (not (null (get-elem-pose (second (first desig-properties)))))
-;;                           (null (get-elem-pose (second (second desig-properties))))
-;;                           (not (null (get-elem-pose (second (third desig-properties))))))
-;;                      (setf e-elem (second (first desig-properties)))
-;;                      (setf d-elem (second (third desig-properties)))
-;;                      (setf z-elem (calculate-the-specific-object
-;;                                    e-elem
-;;                                    (first (first desig-properties))
-;;                                    (second (second desig-properties)))))
-;;                     ;;if second and third are names
-;;                     ((and (null (get-elem-pose (second (first desig-properties))))
-;;                           (not (null (get-elem-pose (second (second desig-properties)))))
-;;                           (not (null (get-elem-pose (second (third desig-properties))))))
-;;                      (setf z-elem  (second (second desig-properties)))
-;;                      (setf d-elem  (second (third desig-properties)))
-;;                      (setf e-elem (get-objname-based-on-property-and-objname2
-;;                                    (first (first desig-properties))
-;;                                    (second (first desig-properties))
-;;                                    z-elem)))
-;;                     (t  (setf z-elem  (second (second desig-properties)))
-;;                         (setf d-elem  (second (third desig-properties)))
-;;                         (setf e-elem  (second (third desig-properties)))
-;;                    (setf z-elem (second (second desig-properties)))))        
-                     
-                           
-;;             (setf liste (list (list (first (first desig-properties)) e-elem)
-;;                                       (list (first (second desig-properties)) z-elem)
-;;                                        (list (first (third desig-properties)) d-elem)))
-;;            (setf desig (make-designator :location liste))))desig))
-
+   
 (defun cam-get-pose->relative-map (vec)
 (let((pose-stmp (cl-transforms-stamped:make-pose-stamped "camera_depth_frame"
                                                          0.0 vec
                                                          (cl-transforms:make-identity-rotation))))
   (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose pose-stmp :target-frame "map"))))
 
-(defun create-logged-designator (msgs)
+;; Creating Cram-designator by using high-level instruction-msgs coming
+;; from the parser
+(defun create-cram-designator-based-on-msgs (msgs)
   ;;(format t "~a~%" msgs)
   (let ((action_list '()))
   (loop for index being the elements of msgs
            do (let ((property_list NIL)
                     (loc_desig NIL)
                     (action (std_msgs-msg:data (instructor_mission-msg:action_type index)))
-                    (perspective (std_msgs-msg:data (instructor_mission-msg:agent_perspective index)))
-                    (propliste (instructor_mission-msg:propkeys index)))
-                (if (string-equal action "show")
-                    (setf action "show-picture"))
-                (loop for jndex being the elements of propliste
+                    (actor (std_msgs-msg:data (instructor_mission-msg:instructor index)))
+                    (viewpoint (std_msgs-msg:data (instructor_mission-msg:viewpoint index)))
+                    (propkeys (instructor_mission-msg:propkeys index)))
+                (loop for jndex being the elements of propkeys
                       do(let((pointing NIL) (obj NIL)
                              (spatial
-                               (std_msgs-msg:data (instructor_mission-msg:spatial_relation jndex)))
+                               (std_msgs-msg:data (instructor_mission-msg:object_relation jndex)))
                              (object
-                               (std_msgs-msg:data (instructor_mission-msg:language_object jndex)))
-                             (property
-                               (std_msgs-msg:data (instructor_mission-msg:property jndex)))
+                               (std_msgs-msg:data (instructor_mission-msg:object_entity jndex)))
+                             (color
+                               (std_msgs-msg:data (instructor_mission-msg:object_color jndex)))
+                             (size
+                               (std_msgs-msg:data (instructor_mission-msg:object_size jndex)))
+                             (num
+                               (std_msgs-msg:data (instructor_mission-msg:object_num jndex)))
                              (flag
                                (std_msgs-msg:data (instructor_mission-msg:flag jndex))))
+                          (cond((string-equal "robot" num)
+                                (setf viewpoint actor)
+                                (setf num "null")))
                           (if(and (string-equal spatial "null")
                                   (not (string-equal "null" object)))
                              (setf spatial "ontop"))
@@ -751,22 +642,26 @@ quadrotor, so the rotation is on x-axis"
                                        (setf obj (give-pointed-obj-based-on-language-obj object pointing)))
                                       (t (setf obj NIL)))
                             (if (equal obj NIL)
-                                (setf obj object))                        
-                            (setf property_list (append (list  (list (list :property property) (list (direction-symbol spatial) obj))) property_list))))))
+                                (setf obj object))
+                            (setf property_list (append (list  (list (list (direction-symbol spatial) obj)
+                                                                     (list :color color)
+                                                                     (list :size size)
+                                                                     (list :num num))) property_list))))))
                 (cond((not (equal NIL property_list))
                       (setf loc_desig (make-designator :location property_list))
                       (setf action_list (append action_list (list (make-designator :action `((:type ,action)
-                                                                                             (:perspective ,perspective)
-                                                                                       (:loc ,loc_desig)))))))
+                                                                                             (:actor ,actor)
+                                                                                             (:viewpoint ,viewpoint)
+                                                                                       (:goal ,loc_desig)))))))
                      (t (setf action_list (append action_list (list (make-designator :action `((:type ,action)
-(:perspective ,perspective))))))))))
-    action_list))
+                                                                                               (:actor ,actor)
+                                                                                               (:viewpoint ,viewpoint))))))))))
+action_list))
 
-
-                
+;
  (defun gazebo-functions (newliste)
    (dotimes (index (length newliste))
-     do(let((pose  (desig-prop-value (nth index newliste) :loc)))
+     do(let((pose  (desig-prop-value (nth index newliste) :goal)))
          (cond((string-equal "move" (desig-prop-value (nth index newliste) :type))
                (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
                                                              (cl-transforms:y (cl-transforms:origin pose))
@@ -779,11 +674,11 @@ quadrotor, so the rotation is on x-axis"
                       (setf new-quad-pose (look-at-object-x (cl-transforms:make-pose (cl-transforms:origin quad-pose)(cl-transforms:orientation (cl-transforms:transform->pose (cam-depth-tf-transform)))) *obj-pose*))
                  (setf rotation-cmd (forward-rotatecmd-to-gazebo new-quad-pose))))
               ((and (string-equal "take-picture" (desig-prop-value (nth index newliste) :type))
-                    (equal NIL (desig-prop-value (nth index newliste) :loc)))
+                    (equal NIL (desig-prop-value (nth index newliste) :goal)))
                (setf *value* (forward-takecmd-to-gazebo "go")))
               ((and (string-equal "take-picture"   (desig-prop-value (nth index newliste) :type))
-                    (not (null (desig-prop-value (nth index newliste) :loc))))
-               (setf pose (desig-prop-value (nth index newliste) :loc))
+                    (not (null (desig-prop-value (nth index newliste) :goal))))
+               (setf pose (desig-prop-value (nth index newliste) :goal))
                (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
                                                       (cl-transforms:y (cl-transforms:origin pose))
                                                       (cl-transforms:z (cl-transforms:origin pose))
@@ -798,7 +693,7 @@ quadrotor, so the rotation is on x-axis"
                (setf *value* (forward-takecmd-to-gazebo "go")))
                ((and (or (string-equal "show"  (desig-prop-value (nth index newliste) :type))
                       (string-equal "show-picture"  (desig-prop-value (nth index newliste) :type)))
-                    (equal (desig-prop-value (nth index newliste) :loc) NIL))
+                    (equal (desig-prop-value (nth index newliste) :goal) NIL))
                 (cond((or (string-equal *value* "") (string-equal *value* "value"))
                       (setf *value* (forward-takecmd-to-gazebo "go"))
                       (roslisp:wait-duration 2)
@@ -807,8 +702,8 @@ quadrotor, so the rotation is on x-axis"
                         (setf value (forward-showcmd-to-gazebo *value*)))))
                 ((and (or (string-equal "show"  (desig-prop-value (nth index newliste) :type))
                       (string-equal "show-picture"  (desig-prop-value (nth index newliste) :type)))
-                  (not (equal (desig-prop-value (nth index newliste) :loc) NIL)))
-             (setf pose (desig-prop-value (nth index newliste) :loc))
+                  (not (equal (desig-prop-value (nth index newliste) :goal) NIL)))
+             (setf pose (desig-prop-value (nth index newliste) :goal))
              (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
                                                      (cl-transforms:y (cl-transforms:origin pose))
                                                      (cl-transforms:z (cl-transforms:origin pose))

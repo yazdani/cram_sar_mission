@@ -31,16 +31,11 @@
 
 
 int sockfd, newsockfd, portno, clilen;
-  std::string tok1, tok2, tok3, tok4, tok5, tok6, tok7, tok8, tok9, tok10;
-  std::string tok11, tok12, tok13, tok14, tok15, tok16, tok17, tok18, tok19, tok20;
-  std::string tok21, tok22, tok23, tok24, tok25, tok26, tok27, tok28, tok29, tok30;
-  std::string tok31, tok32, tok33, tok34, tok35, tok36, tok37, tok38, tok39, tok40;
-  std::string tok41, tok42, tok43, tok44, tok45, tok46, tok47, tok48, tok49, tok50;
-  std::string tok51, tok52, tok53, tok54, tok55, tok56, tok57, tok58, tok59, tok60;
-  std::string part1, part2;
-  std::string flag1, flag2;
+
  
 struct sockaddr_in serv_addr, cli_addr;
+std::string part1, part2, action, action0, spatial0, spatial, entity0, entity1, entity2, entity3, entity, property, spatial00, spatial01, property00, property01, property02, entity00, entity01, size0, size1, property0, property1, num0, num1, color0, color1, flag0, flag1, spatial02, entity02;
+  
 ros::Publisher chatter_pub;
 using namespace std;
 
@@ -55,404 +50,195 @@ vector<string> splitString(string input, string delimiter)
 
 string without_brakets(string value)
 {
-  std::vector<string> no_brackets = splitString(value, ";");
-  string array_vec= "";
+  part1 = "null";
+  part2 = "null";
+  action = "null";
+  action0 = "null";
+  spatial0 = "null";
+  spatial = "null";
+  entity0 = "null";
+  entity1 = "null";
+  entity2 = "null";
+  entity3 = "null";
+  entity = "null";
+  property = "null";
+  spatial00 = "null";
+  spatial01 = "null";
+  spatial02 = "null";
+  property00 = "null";
+  property01 = "null";
+  property02 = "null";
+  entity00 = "null";
+  entity01 = "null";
+  size0 = "null";
+  size1 = "null";
+  property0 = "null";
+  property1 = "null";
+  num0 = "null";
+  num1 = "null";
+  color0 = "null";
+  color1 = "null";
+  flag0 = "false";
+  flag1 = "false";
+  entity02 = "null";
+  std::vector<string> actions = splitString(value, ";");
+  string merged_strings= "";
   
-  std::string s2 = "inside";
-  std::string s3 = "pointed_at";
-  std::string p1 = "small";
-  std::string p2 = "big";
-  std::string c1 = "red";
-  std::string c2 = "blue";
-  std::string c3 = "green";
-  std::string c4 = "brown";
-  std::string property1 = "empty";
-  std::string property2 = "empty";
+  std::string inside = "inside";
 
-  for(unsigned i = 0; i < no_brackets.size(); i++)
+
+  if(actions.size() == 0)
     {
-      boost::replace_all(no_brackets[i],"picture)","nil,picture)");
-      boost::replace_all(no_brackets[i],"image)","nil,picture)");
-      if(strstr(no_brackets[i].c_str(),s2.c_str())) //if inside
+      return "Error: Parsing did not work";
+    }
+ 
+  for(unsigned i = 0; i < actions.size(); i++)
+    {
+      boost::replace_all(actions[i],"picture)","picture,nil(null))");
+      boost::replace_all(actions[i],"image)","picture,nil(null))");
+      if(strstr(actions[i].c_str(),inside.c_str())) //if inside
 	{
-	  part1 = no_brackets[i].substr(0, no_brackets[i].find("<=")); //erster abschnitt
-	  part2 = no_brackets[i].substr(no_brackets[i].find("inside"),no_brackets[i].size()); //letzter abschnitt
-	  if(strstr(part1.c_str(),s3.c_str())) //if pointed
+	  //move(right,nil(tree))<=inside(to,nil(rock))
+	  //move(right,nil(tree))
+	  part1 = actions[i].substr(0,actions[i].find("<=")); //move(right,nil(tree))
+	  ROS_INFO_STREAM("part1: " + part1);
+	  part2 = actions[i].substr(actions[i].find("inside"),actions[i].size()); //(to,nil(rock))
+	  ROS_INFO_STREAM("part2: " + part2);
+	  action0 = part1.substr(0,part1.find(",")); //move(right  
+	  ROS_INFO_STREAM("action0: " + action0);
+	  action =  action0.substr(0,action0.find("(")); //move
+	  ROS_INFO_STREAM("action: " + action);
+	  spatial0 = action0.substr(action0.find("("), action0.size()); //(right
+	  ROS_INFO_STREAM("spatial0: " + spatial0);
+	  spatial = spatial0.substr(1, spatial0.size()); //right
+	  ROS_INFO_STREAM("spatial: " + spatial);
+	  entity0 = part1.substr(part1.find(","),part1.size()); //,nil(tree))
+	  ROS_INFO_STREAM("entity0: " + entity0);
+          entity1 = entity0.substr(1,entity0.size()); //nil(tree))
+	  ROS_INFO_STREAM("entity1: " + entity1);
+          entity2 = entity1.substr(entity1.find("("),entity1.size()); //(tree))
+	  ROS_INFO_STREAM("entity2: " + entity2);
+	  entity3 = entity2.substr(1,entity2.size()); //tree))
+	  ROS_INFO_STREAM("entity3: " + entity3);
+          entity = entity3.substr(0,entity3.find(")")); //tree
+	  ROS_INFO_STREAM("entity: " + entity);
+	  property = entity1.substr(0,entity1.find("(")); //nil
+	  ROS_INFO_STREAM("property: " + property);
+	  //<=inside(to,nil(rock))
+	  spatial00 = part2.substr(part2.find("("), part2.size()); //(to,nil(rock))
+	  //spatial00 = part2.substr(1,part2.size()); //to,nil(rock))
+	  ROS_INFO_STREAM("spatial00: " + spatial00);
+	  spatial01 = spatial00.substr(1,spatial00.size()); //to,nil(rock))
+	  ROS_INFO_STREAM("spatial01: " + spatial01);
+	  spatial02 = spatial01.substr(0,spatial01.find(",")); //to,nil(rock));
+	  ROS_INFO_STREAM("spatial02: " + spatial02);
+	  property00 = part2.substr(part2.find(","),part2.size()); //,nil(rock))
+	  ROS_INFO_STREAM("property00: " + property00);
+	  property01 = property00.substr(1,property00.size()); //nil(rock))
+	  ROS_INFO_STREAM("property01: " + property01);
+	  property02 = property01.substr(0,property01.find("(")); //nil
+	  ROS_INFO_STREAM("property02: " + property02);
+	  entity00 = spatial01.substr(spatial01.find("("),spatial01.size()); //(rock))
+	  ROS_INFO_STREAM("entity00: " + entity00);
+	  entity01 = entity00.substr(0, entity00.find(")")); //(rock
+	  ROS_INFO_STREAM("entity01: " + entity01);
+	  entity02 = entity01.substr(1, entity01.size()); //rock
+	  ROS_INFO_STREAM("entity02: " + entity02);
+	  if(property.compare("big") == 0 || property.compare("small") == 0)
 	    {
-	      tok1 = part1.substr(0,part1.find(",")); //move(right
-	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
-	      tok3 = tok2.substr(1,tok2.size());// right token12
-	      tok4 = part1.substr(0,part1.find(",")); //move(right   
-	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
-	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
-	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
-	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
-	      tok9 = tok8.substr(1,tok8.size()); //rock))
-	      tok10 = tok9.substr(0,tok9.find(")")); //rock
+	      size0 = property; 
+	    }
+	  if(property.compare("pointed_at") == 0)
+	    {
+	      flag0 = "true";
+	    }
+	  if(property.compare("one") == 0 || property.compare("two") == 0 || property.compare("three") == 0 || property.compare("robot") == 0 )
+	    {
+	      num0 = property;
+	    }
+	  if(property.compare("green") == 0 || property.compare("red") == 0 ||
+	     property.compare("blue") == 0 || property.compare("white") == 0 ||
+	     property.compare("black") == 0 || property.compare("brown") == 0 ||
+	     property.compare("yellow") == 0)
+	    {
+	      color0 = property;
+	    }
+	  
+
+	  if(property02.compare("big") == 0 || property02.compare("small") == 0)
+	    {
+	      size1 = property02; 
+	    }
+	  if(property02.compare("pointed_at") == 0)
+	    {
 	      flag1 = "true";
-	      property1 = "empty";
-		array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+tok10 +","+ flag1;
-
-
-	    }else if(strstr(part1.c_str(),p1.c_str())) //if not pointed but small
+	    }
+	  if(property02.compare("one") == 0 || property02.compare("two") == 0 || property02.compare("three") == 0 || property02.compare("robot") == 0)
 	    {
-	      tok1 = part1.substr(0,part1.find(",")); //move(right
-	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
-	      tok3 = tok2.substr(1,tok2.size());// right token12
-	      tok4 = part1.substr(0,part1.find(",")); //move(right   
-	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
-	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
-	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
-	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
-	      tok9 = tok8.substr(1,tok8.size()); //rock))
-	      tok10 = tok9.substr(0,tok9.find(")")); //rock
-	      flag1 = "false";
-	      property1 = "small";
-
-	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
-	    }else if(strstr(part1.c_str(),p2.c_str()))//if not small but big
+	      num1 = property02;
+	    }
+	  if(property02.compare("green") == 0 || property02.compare("red") == 0 ||
+	     property02.compare("blue") == 0 || property02.compare("white") == 0 ||
+	     property02.compare("black") == 0 || property02.compare("brown") == 0 ||
+	     property02.compare("yellow") == 0)
 	    {
-	      tok1 = part1.substr(0,part1.find(",")); //move(right
-	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
-	      tok3 = tok2.substr(1,tok2.size());// right token12
-	      tok4 = part1.substr(0,part1.find(",")); //move(right   
-	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
-	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
-	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
-	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
-	      tok9 = tok8.substr(1,tok8.size()); //rock))
-	      tok10 = tok9.substr(0,tok9.find(")")); //rock
-	      property1 = "big";
-	      flag1 = "false";
-	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
-
-
-
-	    }else if(strstr(part1.c_str(),c1.c_str())) //if not big but colored red
+	      color1 = property02;
+	    }
+	 merged_strings = merged_strings + action +","+ spatial +","+ entity + "," + color0 + "," +size0 +","+ num0 + "," +flag0+ ",repeat,"
+	   + action+ ","+ spatial02 + ","+entity02 +","+color1+ "," +size1 +","+ num1 + "," +flag1+"0";
+	  
+	}else
+	{  //move(right,nil(tree))
+	  ROS_INFO_STREAM("actions[i]: " + actions[i]);
+	  action0 = actions[i].substr(0,actions[i].find(",")); //move(right  
+	  ROS_INFO_STREAM("action0: " + action0);
+	  action =  action0.substr(0,action0.find("(")); //move
+	  ROS_INFO_STREAM("action: " + action);
+	  spatial0 = action0.substr(action0.find("("), action0.size()); //(right
+	  ROS_INFO_STREAM("spatial0: " + spatial0);
+	  spatial = spatial0.substr(1, spatial0.size()); //right
+	  ROS_INFO_STREAM("spatial: " + spatial);
+	  entity0 = actions[i].substr(actions[i].find(","),actions[i].size()); //,nil(tree))
+	  ROS_INFO_STREAM("entity0: " + entity0);
+          entity1 = entity0.substr(1,entity0.size()); //nil(tree))
+	  ROS_INFO_STREAM("entity1: " + entity1);
+          entity2 = entity1.substr(entity1.find("("),entity1.size()); //(tree))
+	  ROS_INFO_STREAM("entity2: " + entity2);
+	  entity3 = entity2.substr(1,entity2.size()); //tree))
+	  ROS_INFO_STREAM("entity3: " + entity3);
+          entity = entity3.substr(0,entity3.find(")")); //tree
+	  ROS_INFO_STREAM("entity: " + entity);
+	  property = entity1.substr(0,entity1.find("(")); //nil
+	  ROS_INFO_STREAM("property: " + property);
+	  if(property.compare("big") == 0 || property.compare("small") == 0)
 	    {
-	      tok1 = part1.substr(0,part1.find(",")); //move(right
-	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
-	      tok3 = tok2.substr(1,tok2.size());// right token12
-	      tok4 = part1.substr(0,part1.find(",")); //move(right   
-	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
-	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
-	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
-	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
-	      tok9 = tok8.substr(1,tok8.size()); //rock))
-	      tok10 = tok9.substr(0,tok9.find(")")); //rock
-	      property1 = "red";
-	      flag1 = "false";
-	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
+	      size0 = property; 
+	    }
 
-	    }else if(strstr(part1.c_str(),c2.c_str())) //if not red but blue
+	  if(property.compare("pointed_at") == 0)
 	    {
-	      tok1 = part1.substr(0,part1.find(",")); //move(right
-	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
-	      tok3 = tok2.substr(1,tok2.size());// right token12
-	      tok4 = part1.substr(0,part1.find(",")); //move(right   
-	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
-	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
-	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
-	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
-	      tok9 = tok8.substr(1,tok8.size()); //rock))
-	      tok10 = tok9.substr(0,tok9.find(")")); //rock
-	      property1 = "blue";
-	      flag1 = "false";
-	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
-	    }else if(strstr(part1.c_str(),c3.c_str())) //if not blue but green
-	    {    
-	      tok1 = part1.substr(0,part1.find(",")); //move(right
-	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
-	      tok3 = tok2.substr(1,tok2.size());// right token12
-	      tok4 = part1.substr(0,part1.find(",")); //move(right   
-	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
-	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
-	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
-	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
-	      tok9 = tok8.substr(1,tok8.size()); //rock))
-	      tok10 = tok9.substr(0,tok9.find(")")); //rock
-	      property1 = "green";
-	      flag1 = "false";
-	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
-	    }else if(strstr(part1.c_str(),c4.c_str())) //if not green but brown
-	    {
-	      tok1 = part1.substr(0,part1.find(",")); //move(right
-	      tok2 = tok1.substr(tok1.find("("),tok1.size());// (right
-	      tok3 = tok2.substr(1,tok2.size());// right token12
-	      tok4 = part1.substr(0,part1.find(",")); //move(right   
-	      tok5 = tok4.substr(0,tok4.find("(")); //move token 11
-	      tok6 = part1.substr(part1.find(","),part1.size()); //,pointed_at(rock))
-	      tok7 = tok6.substr(1,tok6.size()); //pointed_at(rock))
-	      tok8 = tok7.substr(tok7.find("("),tok7.size()); //(rock))
-	      tok9 = tok8.substr(1,tok8.size()); //rock))
-	      tok10 = tok9.substr(0,tok9.find(")")); //rock
-	      property1 = "brown";
-	      flag1 = "false";
-	      array_vec = array_vec + tok5 +","+ tok3 +","+ property1 + ","+ tok10 +","+ flag1;
-	    }else
-	    {
-	      tok20 = part1.substr(0,part1.find(",")); //move(right
-	      tok21 = tok20.substr(tok20.find("("),tok20.size());// (right
-	      tok22 = tok21.substr(1,tok21.size());// right
-	      
-	      tok23 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size());
-	      tok24 = tok23.substr(1,tok23.size());
-	      tok25 = tok24.substr(0,tok24.find(")")); //first obj
-	      tok26 = no_brackets[i].substr(0,no_brackets[i].find("(")); //action
-	      flag1 = "false";
-	      property1 = "empty";
-	      array_vec = array_vec +tok26 +","+ tok22 +","+ property1 + ","+ tok25 +","+ flag1;
-
+	      flag0 = "true";
 	    }
 	  
-	  if(strstr(part2.c_str(),s3.c_str())) //if pointed in second part
+	  if(property.compare("one") == 0 || property.compare("two") == 0 || property.compare("three") == 0 || property.compare("robot") == 0)
 	    {
-	      tok30 = part2.substr(0,part2.find(",")); //inside(right
-	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
-	      tok32 = tok31.substr(1,tok31.size()); //right
-	      
-	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
-	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
-	      tok35 = tok34.substr(1,tok34.size()); //rock))
-	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
-	      flag2 = "true";
-	      property2 = "empty";
-	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
-
+	      num0 = property;
 	    }
-	  else if(strstr(part2.c_str(),p1.c_str())) //if not pointed but small
+	  if(property.compare("green") == 0 || property.compare("red") == 0 ||
+	     property.compare("blue") == 0 || property.compare("white") == 0 ||
+	     property.compare("black") == 0 || property.compare("brown") == 0 ||
+	     property.compare("yellow") == 0)
 	    {
-	      tok30 = part2.substr(0,part2.find(",")); //inside(right
-	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
-	      tok32 = tok31.substr(1,tok31.size()); //right
-	      
-	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
-	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
-	      tok35 = tok34.substr(1,tok34.size()); //rock))
-	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
-	      property2 = "small";
-	      flag2 = "false";
-	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
-	     
-	    }else if(strstr(part2.c_str(),p2.c_str()))//if not small but big
-	    {
-	      tok30 = part2.substr(0,part2.find(",")); //inside(right
-	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
-	      tok32 = tok31.substr(1,tok31.size()); //right
-	      
-	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
-	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
-	      tok35 = tok34.substr(1,tok34.size()); //rock))
-	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
-	      flag2 = "false";
-	      property2 = "big";	     
-	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
-	     
-	    }else if(strstr(part2.c_str(),c1.c_str())) //if not big but colored red
-	    {
-	      tok30 = part2.substr(0,part2.find(",")); //inside(right
-	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
-	      tok32 = tok31.substr(1,tok31.size()); //right
-	      
-	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
-	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
-	      tok35 = tok34.substr(1,tok34.size()); //rock))
-	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
-	      flag2 = "false";
-	      property2 = "red";
-	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + "," +tok36 +","+ flag2 + "0";
-	      
-
-	    }else if(strstr(part2.c_str(),c2.c_str())) //if not red but blue
-	    {	
-	      tok30 = part2.substr(0,part2.find(",")); //inside(right
-	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
-	      tok32 = tok31.substr(1,tok31.size()); //right
-	      
-	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
-	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
-	      tok35 = tok34.substr(1,tok34.size()); //rock))
-	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
-	      flag2 = "false";
-	      property2 = "blue";
-	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
-	     
-	    }else if(strstr(part2.c_str(),c3.c_str())) //if not blue but green
-	    {    
-	      tok30 = part2.substr(0,part2.find(",")); //inside(right
-	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
-	      tok32 = tok31.substr(1,tok31.size()); //right
-	      
-	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
-	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
-	      tok35 = tok34.substr(1,tok34.size()); //rock))
-	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
-	      flag2 = "false";
-	      property2 = "green";
-	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
-	      
-	    }else if(strstr(part2.c_str(),c4.c_str())) //if not green but brown
-	    {
-	      tok30 = part2.substr(0,part2.find(",")); //inside(right
-	      tok31 = tok30.substr(tok30.find("("),tok30.size()); //(right
-	      tok32 = tok31.substr(1,tok31.size()); //right
-	      
-	      tok33 = part2.substr(part2.find(","),part2.size()); //,pointed(rock)
-	      tok34 = tok33.substr(tok33.find("("),tok33.size()); //(rock))
-	      tok35 = tok34.substr(1,tok34.size()); //rock))
-	      tok36 = tok35.substr(0,tok35.find(")"));  //rock
-	      flag2 = "false";
-	      property2 = "brown";
-	      array_vec = array_vec +","+ "repeat" +","+ tok32 +","+ property2 + ","+ tok36 +","+ flag2 + "0";
-
+	      color0 = property;
 	    }
-	  else //if not pointed in second part
-	    {
-	      
-	      tok40 = part2.substr(0,part2.find(",")); //inside(next
-	      tok41 = tok40.substr(tok40.find("("),tok40.size()); //(next
-	      tok42 = tok41.substr(1,tok41.size()); //left
-	      tok43 = part2.substr(part2.find(","),part2.size()); 
-	      tok44 = tok43.substr(0,tok43.find(")")); 
-	      tok45 = tok44.substr(1,tok44.size()); //tree
-	      flag2 = "false";
-	      property2 = "empty";
-	      array_vec = array_vec + "," +"repeat" +","+ tok42 +","+property2+","+ tok45 +","+ flag2 + "0";
-	    }
-	}else //if not inside
-	{
-	  if(strstr(no_brackets[i].c_str(),s3.c_str())) //if pointed
-	    {
-	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
-	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
-	      tok52 = tok51.substr(1,tok51.size());// right token12
-	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
-	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
-	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
-	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
-	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
-	      tok58 = tok57.substr(1,tok57.size()); //rock))
-	      tok59 = tok58.substr(0,tok58.find(")")); //rock
-	      flag2 = "true";
-	      property2 = "empty";
-		array_vec =  array_vec + tok54 +","+ tok52  +","+property2+","+ tok59 +","+ flag2 + "0";
-
-	    }  else if(strstr(no_brackets[i].c_str(),p1.c_str())) //if not pointed but small
-	    {
-	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
-	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
-	      tok52 = tok51.substr(1,tok51.size());// right token12
-	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
-	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
-	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
-	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
-	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
-	      tok58 = tok57.substr(1,tok57.size()); //rock))
-	      tok59 = tok58.substr(0,tok58.find(")")); //rock
-	      property2 = "small";
-	      flag2 = "false";
-	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";      
-	    }else if(strstr(no_brackets[i].c_str(),p2.c_str()))//if not small but big
-	    {
-	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
-	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
-	      tok52 = tok51.substr(1,tok51.size());// right token12
-	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
-	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
-	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
-	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
-	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
-	      tok58 = tok57.substr(1,tok57.size()); //rock))
-	      tok59 = tok58.substr(0,tok58.find(")")); //rock
-	      property2 = "big";
-	      flag2 = "false";
-	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";
-
-	    }else if(strstr(no_brackets[i].c_str(),c1.c_str())) //if not big but colored red
-	    {
-	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
-	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
-	      tok52 = tok51.substr(1,tok51.size());// right token12
-	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
-	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
-	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
-	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
-	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
-	      tok58 = tok57.substr(1,tok57.size()); //rock))
-	      tok59 = tok58.substr(0,tok58.find(")")); //rock
-	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";
-	      flag2 = "false";
-	      property2 = "red";
-
-	    }else if(strstr(no_brackets[i].c_str(),c2.c_str())) //if not red but blue
-	    {	
-	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
-	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
-	      tok52 = tok51.substr(1,tok51.size());// right token12
-	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
-	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
-	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
-	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
-	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
-	      tok58 = tok57.substr(1,tok57.size()); //rock))
-	      tok59 = tok58.substr(0,tok58.find(")")); //rock
-	      flag2 = "false";
-	      property2 = "blue";
-	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";
-	      
-	    }else if(strstr(no_brackets[i].c_str(),c3.c_str())) //if not blue but green
-	    {    
-	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
-	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
-	      tok52 = tok51.substr(1,tok51.size());// right token12
-	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
-	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
-	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
-	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
-	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
-	      tok58 = tok57.substr(1,tok57.size()); //rock))
-	      tok59 = tok58.substr(0,tok58.find(")")); //rock
-	      property2 = "green";
-	      flag2 = "false";
-	      array_vec =  array_vec + tok54 +","+ tok52 +","+property2+","+ tok59 +","+ flag2 + "0";
-	     
-	    }else if(strstr(part1.c_str(),c4.c_str())) //if not green but brown
-	    {
-	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
-	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
-	      tok52 = tok51.substr(1,tok51.size());// right token12
-	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
-	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
-	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,pointed_at(rock))
-	      tok56 = tok55.substr(1,tok55.size()); //pointed_at(rock))
-	      tok57 = tok56.substr(tok56.find("("),tok56.size()); //(rock))
-	      tok58 = tok57.substr(1,tok57.size()); //rock))
-	      tok59 = tok58.substr(0,tok58.find(")")); //rock
-	      property2 = "brown";
-	      flag2 = "false";
-	      array_vec =  array_vec + tok54 +","+ tok52 +","+ property2 +","+ tok59 +","+ flag2 + "0";
-	  
-	    }else //if not pointed and all the properties didn't fit
-	    {
-	      tok50 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right
-	      tok51 = tok50.substr(tok50.find("("),tok50.size());// (right
-	      tok52 = tok51.substr(1,tok51.size());// right token12
-	      tok53 = no_brackets[i].substr(0,no_brackets[i].find(",")); //move(right   
-	      tok54 = tok53.substr(0,tok53.find("(")); //move token 11
-	      tok55 = no_brackets[i].substr(no_brackets[i].find(","),no_brackets[i].size()); //,rock)
-	      tok56 = tok55.substr(1,tok55.size()); //rock))
-	      tok59 = tok56.substr(0,tok56.find(")")); //rock
-	      flag2 = "false";
-	      property2 = "empty";
-	      array_vec = array_vec + tok54 +","+ tok52 +","+ property2 +","+ tok59 +","+ flag2 + "0";
-        
-	    }
+	  merged_strings = merged_strings + action +","+ spatial +","+ entity + "," + color0 + "," +size0 +","+ num0 + "," +flag0+ "0";
 	}
+
     }
 
-  ROS_INFO_STREAM("array_vec: " + array_vec);
-return array_vec;
 
+  ROS_INFO_STREAM("array_vec: " + merged_strings);
+return merged_strings;
 }
 
 string interpretByParser(string cmd)
