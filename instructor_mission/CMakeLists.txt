@@ -65,6 +65,7 @@ add_service_files(
    cram_reason.srv
    call_cmd.srv
    HMIDesig.srv
+   speech_recognizer.srv
 )
 
 ## Generate actions in the 'action' folder
