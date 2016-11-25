@@ -53,12 +53,14 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	 if(without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	    {
 	      desig.action_type.data = without_commas[0]+"-picture";
+	      desig.actor.data = "red_wasp";
 	      desig.instructor.data = find_agent;//instructor;
 	      desig.viewpoint.data = "human";//viewpoint;
 	      prop.object_relation.data = "null";
 	    }else
 	    {
 	      desig.action_type.data = without_commas[0];
+	      desig.actor.data = "red_wasp";
 	      desig.instructor.data = find_agent;//instructor;
 	      desig.viewpoint.data = "human";//viewpoint;
 	      prop.object_relation.data = without_commas[1];
@@ -67,10 +69,10 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	 if(without_commas[2].compare("left") == 0 || without_commas[2].compare("right") == 0)
 	   {
 	     prop.object_relation.data = without_commas[2];
-	     prop.object_entity.data = "null";
+	     prop.object.data = "null";
 	   }else
 	   {
-	     prop.object_entity.data = without_commas[2];
+	     prop.object.data = without_commas[2];
 	   }
 	 prop.object_color.data =  without_commas[3];
 	 prop.object_size.data = without_commas[4];
@@ -84,10 +86,10 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	 if(without_commas[10].compare("left") == 0 || without_commas[10].compare("right") == 0)
 	   {
 	     prop.object_relation.data = without_commas[10];
-	     prop.object_entity.data = "null";
+	     prop.object.data = "null";
 	   }else
 	   {
-	     prop.object_entity.data = without_commas[10];
+	     prop.object.data = without_commas[10];
 	   }
 	 // prop.object_entity.data = without_commas[10];
 	 prop.object_color.data =  without_commas[11];
@@ -109,12 +111,14 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	  if(without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	    {
 	      desig.action_type.data = without_commas[0]+"-picture";
+	      desig.actor.data = find_agent;//instructor;
 	      desig.instructor.data = find_agent;//instructor;
 	      desig.viewpoint.data = "human";//viewpoint;
 	      prop.object_relation.data = "null";
 	    }else
 	    {
 	      desig.action_type.data = without_commas[0];
+	      desig.actor.data = find_agent;//instructor;
 	      desig.instructor.data = find_agent;//instructor;
 	      desig.viewpoint.data = "human";//viewpoint;
 	      prop.object_relation.data = without_commas[1];
@@ -122,10 +126,10 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	  if(without_commas[2].compare("left") == 0 || without_commas[2].compare("right") == 0)
 	   {
 	     prop.object_relation.data = without_commas[2];
-	     prop.object_entity.data = "null";
+	     prop.object.data = "null";
 	   }else
 	   {
-	     prop.object_entity.data = without_commas[2];
+	     prop.object.data = without_commas[2];
 	   }
 	  // prop.object_entity.data = without_commas[2];
 	  prop.object_color.data =  without_commas[3];

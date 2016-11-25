@@ -1,0 +1,10 @@
+right
+left
+ahead
+above
+around
+ontop
+next
+back
+front
+behind
