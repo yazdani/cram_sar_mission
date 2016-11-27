@@ -17,152 +17,203 @@ based on the Verb Order Description-Structure
 import roslib; roslib.load_manifest('instructor_mission')
 from instructor_mission.srv import *
 import rospy
+import re
+import sys
 
 import pygtk
 pygtk.require('2.0')
 import gtk
-
+import string 
 import os
 import commands
+from std_msgs.msg import String
 
-class start_server(object):
-   
-    def __init__(self):
-        rospy.init_node('speechToText')
-        self._action_param = "~action"
-        self._order_param = "~order"
-        self._description_param = "~description"
-        self._property_param = "~property"
-        self._pointer_param = "~pointer"
-        
-        if rospy.has_param(self._action_param) and rospy.has_param(self._order_param) and rospy.has_param(self._description_param) and rospy.has_param(self._pointer_param) and rospy.has_param(self._property_param):
-            self.start_recognizer()
-        else:
-            rospy.logwarn("action and order and description parameters need to be set to start recognizer.")
+action=''
+property=''
+description=''
+order=''
+pointer=''
+speech_output = ""
 
-    def start_recognizer(self):
-        rospy.loginfo("Starting recognizer... ")
-        action = rospy.get_param(self._action_param)
-        order = rospy.get_param(self._order_param)
-        description = rospy.get_param(self._description_param)
-        property = rospy.get_param(self._property_param)
-        pointer = rospy.get_param(self._pointer_param)
-        #print action
-        #rospy.loginfo("action is %s", action)
-        file_action = open(action,'r')
-        #print file_action.read()
-        file_order = open(order, 'r')
-        #print file_order.read()
-        file_description = open(description,'r')
-        #print file_description.read()
-        file_property = open(property,'r')
-        #recognizer_input() as subscriber
-        file_pointer = open(pointer,'r')
-        speech = "go right"
-        print speech
-        speech = speech.split(' ')
-        #print file_action
-        read_action = file_action.read()
-        #print read_actionfile
-        read_order = file_order.read()
-        read_description = file_description.read()
-        read_property = file_property.read()
-        read_pointer = file_pointer.read()
-        
-        
-        if len(speech) > 1:
-            if speech[0] in read_action:
-                print "action"
-                if len(speech) == 1:
-                   print" break"
-                elif speech[1] in read_description and speech[1] == "picture":
-                    print "description"     #------------------ AD
-                elif speech[1] in read_order:
-                    print "order"
-                    if speech[1] == "right" or speech[1] == "left" or speech[1] == "back" or speech[1] == "ahead":#-------------------AO
-                        print "description"
-                        if len(speech) == 2:
-                            print "final"
-                        else:
-                            print "order"
-                    else:
-                        print "order"
-                    elif speech[2] in read_description:         # -------------- AOD
-                        print "description"
-                        if len(speech) == 3:
-                            print "break"
-                        elif speech[3] in read_order:
-                            print "order"
-                            if len(speech) == 4:
-                                print "break"
-                            elif speech[4] in read_description:
-                                print "description"
-                            elif speech[4] in read_pointer:
-                                print "pointer"
-                                if len(speech) == 5:
-                                    print "break"
-                                elif speech[5] in read_description:
-                                    print "description"
-                            elif speech[4] in read_property:
-                                print "property"
-                                if len(speech) == 5:
-                                    print "break"
-                                elif speech[5] in read_description:
-                                    print "description"
-                    elif speech[2] in read_property:             # ------------------- AO PP
-                        print "property"
-                        if speech[3] in read_description:        # ------------------- AO PP D
-                            print "description"
-                            if len(speech) == 4:
-                                print "break"
-                            elif speech[4] in read_order:
-                                print "order"
-                                if len(speech) == 5:
-                                    print "break"
-                                elif speech[5] in read_description:
-                                    print "description"
-                                elif speech[5] in read_property:
-                                    print "property"
-                                    if len(speech) == 6:
+
+def callTheService(speech_output):
+     rospy.wait_for_service("callInstruction")
+     try:
+          callInstruction = rospy.ServiceProxy("callInstruction", text_parser)
+          result = callInstruction(speech_output)
+          return result.result
+     except rospy.ServiceExcepton e:
+          print "Service call failes %s"%e
+
+
+def start_server():
+     rospy.init_node('speechToText')
+     action_param = "~action"
+     order_param = "~order"
+     description_param = "~description"
+     property_param = "~property"
+     pointer_param = "~pointer"
+     
+     if rospy.has_param(action_param) and rospy.has_param(order_param) and rospy.has_param(description_param) and rospy.has_param(pointer_param) and rospy.has_param(property_param):
+          start_recognizer(action_param, order_param, description_param, pointer_param, property_param)
+     else:
+          rospy.logwarn("action and order and description parameters need to be set to start recognizer.")
+          
+def subscriberCB(data):
+     file_action = open(action,'r')
+     file_order = open(order, 'r')
+     file_description = open(description,'r')
+     file_property = open(property,'r')
+     file_pointer = open(pointer,'r')
+     speech_input = data.data
+     speech_input = re.sub(' to ', ' ', speech_input)
+     speech_input = re.sub(' of ', ' ', speech_input)
+     speech = speech_input.split(' ')
+     read_action = file_action.read()
+     read_order = file_order.read()
+     read_description = file_description.read()
+     read_property = file_property.read()
+     read_pointer = file_pointer.read()
+     speech_output = ""
+     if len(speech) > 1:
+          if speech[0] in read_action:
+               speech_output = speech_output + speech[0]
+               if len(speech) == 1:
+                    print "end"
+               elif speech[1] in read_description and speech[1] == "picture":
+                    speech_output = speech_output + " " + speech[1]
+               elif speech[1] in read_description and speech[1] != "picture":
+                    speech_output = speech_output + " to " + speech[1]
+                    if len(speech) == 2:
+                         print "end"
+                    elif speech[2] in read_description:
+                         speech_output = speech_output +" to " +speech[2]
+               elif speech[1] in read_order:
+                    speech_output = speech_output + " "+ speech[1]
+                    if len(speech) == 2:
+                         print "final"
+                    elif speech[2] in read_description:
+                         speech_output = speech_output + " "+ speech[2]
+                         if len(speech) == 3:
+                              print "break"
+                         elif speech[3] in read_order:
+                              print "order"
+                              speech_output = speech_output + " "+ speech[3]
+                                                       
+                              if len(speech) == 4:
+                                   print "break"
+                              elif speech[4] in read_description:
+                                   print "description"
+                                   speech_output = speech_output + " "+ speech[4]
+
+                              elif speech[4] in read_pointer:
+                                   print "pointer"
+                                   speech_output = speech_output + " "+ speech[4]
+
+                                   if len(speech) == 5:
                                         print "break"
-                                    elif speech[6] in read_description:
+                                   elif speech[5] in read_description:
                                         print "description"
-                                elif speech[5] in read_pointer:
-                                    if len(speech) == 6:
-                                        print "break"
-                                    elif speech[6] in read_description:
-                                        print "description"                              
-                    elif speech[2] in read_pointer:              # -------------------- AOP
-                        print "pointer"
-                        if speech[3] in read_description:        # ------------------- AOPD
-                            print "description"
-                            if len(speech) == 4:
-                                print "break"
-                            elif speech[4] in read_order:
-                                print "order"
-                                if len(speech) == 5:
-                                    print "break"
-                                elif speech[5] in read_description:
-                                    print "description"
-                                elif speech[5] in read_pointer:
-                                    print "pointer"
-                                    if len(speech) == 6:
-                                        print "break"
-                                    elif speech[6] in read_description:
-                                            print "description"
-                                elif speech[5] in read_property:
-                                    print "property"
-                                    if len(speech) == 6:
-                                        print "break"
-                                    elif speech[6] in read_description:
-                                            print "description"
-                            else:
-                                print "Something is wrong"
-                else:
-                    print "Please, repeat the command!"
-                            
+                                        speech_output = speech_output + " "+ speech[5]
 
-               
+                              elif speech[4] in read_property:
+                                   print "property"
+                                   speech_output = speech_output + " "+ speech[4]
+                         
+                                   if len(speech) == 5:
+                                        print "break"
+                                   elif speech[5] in read_description:
+                                        print "description"
+                                        speech_output = speech_output + " "+ speech[5]
+                         elif speech[3] in read_description:
+                              speech_output = speech_output + " to "+ speech[3]
+
+                    elif speech[2] in read_property:
+                         speech_output = speech_output + " "+ speech[2]
+                         
+                         if speech[3] in read_description:
+                              print "description"
+                              speech_output = speech_output + " "+ speech[3]
+                         
+                              if len(speech) == 4:
+                                   print "break"
+                              elif speech[4] in read_order:
+                                   print "order"
+                                   speech_output = speech_output + " "+ speech[4]
+
+                                   if len(speech) == 5:
+                                        print "break"
+                                   elif speech[5] in read_description:
+                                        print "description"
+                                        speech_output = speech_output + " "+ speech[5]
+
+                                   elif speech[5] in read_property:
+                                        print "property"
+                                        speech_output = speech_output + " "+ speech[5]
+
+                                        if len(speech) == 6:
+                                             print "break"
+                                        elif speech[6] in read_description:
+                                             print "description"
+                                             speech_output = speech_output + " "+ speech[6]
+
+                                   elif speech[5] in read_pointer:
+                                        speech_output = speech_output + " "+ speech[5]
+                         
+                                        if len(speech) == 6:
+                                             print "break"
+                                        elif speech[6] in read_description:
+                                             print "description"                     
+                                             speech_output = speech_output + " "+ speech[6]
+         
+                    elif speech[2] in read_pointer: 
+                         speech_output = speech_output + " "+ speech[2]
+                         
+                         if speech[3] in read_description:        # ------------------- AOPD
+                              print "description"
+                              speech_output = speech_output + " "+ speech[3]
+                         
+                              if len(speech) == 4:
+                                   print "break"
+                              elif speech[4] in read_order:
+                                   print "order"
+                                   speech_output = speech_output + " "+ speech[4]
+                         
+                                   if len(speech) == 5:
+                                        print "break"
+                                   elif speech[5] in read_description:
+                                        print "description"
+                                        speech_output = speech_output + " "+ speech[5]
+
+                                   elif speech[5] in read_pointer:
+                                        print "pointer"
+                                        speech_output = speech_output + " "+ speech[5]
+
+                                        if len(speech) == 6:
+                                             print "break"
+                                        elif speech[6] in read_description:
+                                             print "description"
+                                             speech_output = speech_output + " "+ speech[6]
+
+                                        elif speech[5] in read_property:
+                                             print "property"
+                                             speech_output = speech_output + " "+ speech[5]
+
+                                             if len(speech) == 6:
+                                                  print "break"
+                                             elif speech[6] in read_description:
+                                                  print "description"
+                                                  speech_output = speech_output + " "+ speech[6]
+
+                         else:
+                              print "Something is wrong"
+               else:
+                    print "Please, repeat the command!"
+     print "speech_output: "
+     speech_output = speech_output.capitalize()
+     callTheService(speech_output)
+                    
+
         # Go to tree next to that rock
 
         # get input from publisher and checking if words are fitting
@@ -171,7 +222,28 @@ class start_server(object):
         # s = rospy.Service('speech_recognizer', speech_recognizer, initialize)
         # print "Ready for getting the instructions"
         # rospy.spin()
+     
+     
+def start_recognizer(action_param, order_param, description_param, pointer_param, property_param):
+     global action
+     global order
+     global description
+     global property
+     global pointer
+
+     rospy.loginfo("Starting recognizer... ")
+     action = rospy.get_param(action_param)
+     order = rospy.get_param(order_param)
+     description = rospy.get_param(description_param)
+     property = rospy.get_param(property_param)
+     pointer = rospy.get_param(pointer_param)
+     
+     rospy.Subscriber("/recognizer/output", String, subscriberCB)
+     rospy.spin()
+
+
+     
 
 if __name__ == "__main__":
-     start = start_server()
-     gtk.main()
+     start_server()
+    
