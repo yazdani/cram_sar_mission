@@ -95,7 +95,15 @@ string without_brakets(string value)
   for(unsigned i = 0; i < actions.size(); i++)
     {
       boost::replace_all(actions[i],"picture)","picture,nil(null))");
+      boost::replace_all(actions[i],"off)","off,nil(null))");
       boost::replace_all(actions[i],"image)","picture,nil(null))");
+      boost::replace_all(actions[i],",tree)",",nil(tree))");
+      boost::replace_all(actions[i],",jacket)",",nil(jacket))");
+      boost::replace_all(actions[i],",house)",",nil(house))");
+      boost::replace_all(actions[i],"pylon)",",nil(pylon))");
+      boost::replace_all(actions[i],"victim)",",nil(victim))");
+      boost::replace_all(actions[i],"rock)",",nil(rock))");
+      boost::replace_all(actions[i],"nil)",",nil(null))");
       if(strstr(actions[i].c_str(),inside.c_str())) //if inside
 	{
 	  //move(right,nil(tree))<=inside(to,nil(rock))

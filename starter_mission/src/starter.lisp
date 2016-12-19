@@ -28,8 +28,11 @@
 
 (in-package :starter-mission)
 
+(defvar *sem-map* NIL)
+
 (defun start-my-ros ()
-  (roslisp-utilities:startup-ros ))
+  (roslisp-utilities:startup-ros)
+  (setf *sem-map* (sem-map-utils:get-semantic-map)))
 
 ;; ROSSERVICE FOR DOING REASONING
 (defun start_reasoning_service ()
@@ -47,34 +50,31 @@
 ;; Besides of semantical annotated objects, this function is also logging the
 ;; high-level designator
 (roslisp:def-service-callback instructor_mission-srv::HMIDesig (desigs)
+  (setf *sem-map* (sem-map-utils:get-semantic-map))
   (let ((id  (beliefstate:start-node "INTERPRET-INSTRUCTION-DESIGNATOR" NIL 2))
         (newliste '())
-        (created_desigs (create-cram-designator-based-on-msgs desigs)))
+        (created_desigs (create-desigs-based-on-hmi-msgs desigs)))
     (cond ((not (null (length created_desigs)))
            (dotimes (incr (length created_desigs))
-             do (cond((not (null (desig-prop-value (nth incr created_desigs) :goal)))
-                      (let*((action (desig-prop-value (nth incr created_desigs) :type))
-                            (actor  (desig-prop-value (nth incr created_desigs) :actor))
-                            (viewpoint  (desig-prop-value (nth incr created_desigs) :viewpoint))
-                            (semantic-desig (filling-desigs-with-semantics
-                                             viewpoint
-                                             (desig-prop-value  (nth incr created_desigs) :goal)))
-                            (actiondesig (make-designator :action `((:type ,action)
-                                                                    (:actor ,actor)
-                                                                    (:viewpoint ,viewpoint)
-                                                                    (:goal, semantic-desig))))
-                            (position (reference-by-agent-frame semantic-desig viewpoint)))
-                        (setf newliste (append newliste (list  (make-designator :action `((:type ,action)
-                                                                                          (:actor ,actor)
-                                                                                          (:viewpoint ,viewpoint)
-                                                                                          (:goal ,position))))))
-                        (beliefstate:add-designator-to-active-node (nth incr created_desigs))
-                        (beliefstate:add-designator-to-active-node actiondesig)
-                        (beliefstate:add-designator-to-active-node (make-designator :action `((:type ,action)
-                                                                                              (:actor ,actor)
-                                                                                              (:viewpoint ,viewpoint)
-                                                                                              (:goal ,position))))))
-                     (t (setf newliste (append newliste (list (nth incr created_desigs))))
+             do(cond((not (null (desig-prop-value (nth incr created_desigs) :goal)))
+                     (let*((action-desig (assign-semantics-to-desig (nth incr created_desigs)))
+                           (viewpoint  (desig-prop-value action-desig :viewpoint))
+                           (sample (reference-by-agent-frame (desig-prop-value action-desig :goal) viewpoint)))
+                       (setf newliste (append newliste
+                                              (list (make-designator :action `((:type ,(desig-prop-value action-desig :type))
+                                                                              (:actor ,(desig-prop-value action-desig :actor))
+                                                                              (:operator ,(desig-prop-value action-desig :operator))
+                                                                              (:viewpoint ,(desig-prop-value action-desig :viewpoint))
+                                                                              (:goal ,sample))))))
+                       (beliefstate:add-designator-to-active-node (nth incr created_desigs))
+                       (beliefstate:add-designator-to-active-node action-desig)
+                       (beliefstate:add-designator-to-active-node (make-designator :action
+                                                                                   `((:type ,(desig-prop-value action-desig :type))
+                                                                                    (:actor ,(desig-prop-value action-desig :actor))
+                                                                                    (:operator ,(desig-prop-value action-desig :operator))
+                                                                                    (:viewpoint ,(desig-prop-value action-desig :viewpoint))
+                                                                                    (:goal ,sample))))))
+                    (t (setf newliste (append newliste (list (nth incr created_desigs))))
                         (beliefstate:add-designator-to-active-node (nth incr created_desigs))))))
           (t (setf newliste NIL)))
     (beliefstate:stop-node id)
@@ -176,6 +176,15 @@
   (let((value NIL))
     (if (roslisp:wait-for-service "show_image" 10)
         (setf value (img_mission-srv:result (roslisp:call-service "show_image"
+                                                                  'img_mission-srv::returnString
+                                                                  :goal tmp))))
+    value))
+
+(defun forward-showcmd-to-gazebo (tmp)
+ ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
+  (let((value NIL))
+    (if (roslisp:wait-for-service "takeOff" 10)
+        (setf value (img_mission-srv:result (roslisp:call-service "takeOff"
                                                                   'img_mission-srv::returnString
                                                                   :goal tmp))))
     value))

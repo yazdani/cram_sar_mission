@@ -42,7 +42,7 @@ def callTheService(speech_output):
           callInstruction = rospy.ServiceProxy("callInstruction", text_parser)
           result = callInstruction(speech_output)
           return result.result
-     except rospy.ServiceExcepton e:
+     except rospy.ServiceExcepton, e:
           print "Service call failes %s"%e
 
 

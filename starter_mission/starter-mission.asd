@@ -54,10 +54,10 @@
      (:file "costmap-knowledge" :depends-on("package"))
      (:file "cost-functions" :depends-on ("package"))
      (:file "prolog" :depends-on ("package" "cost-functions"))
-     (:file "starter" :depends-on ("package" "internal-functions"))
-     (:file "internal-functions" :depends-on ("package" "gesture-calculation" "costmap-knowledge" "prolog" "designators" "publishing"))
+     (:file "starter" :depends-on ("package" "internal-functions" "designators"))
+     (:file "internal-functions" :depends-on ("package" "gesture-calculation" "costmap-knowledge" "prolog" "publishing"))
      (:file "publishing" :depends-on ("package"))
      (:file "gesture-calculation" :depends-on ("package"))
-     (:file "designators" :depends-on ("package"))
+     (:file "designators" :depends-on ("package" "internal-functions"))
 
 ))))

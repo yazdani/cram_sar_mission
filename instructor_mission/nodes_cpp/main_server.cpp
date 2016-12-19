@@ -162,26 +162,33 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
             instructor_mission::call_cmd::Response &res)
 {
   ros::NodeHandle n_client;
+  ros::NodeHandle n_client_view;
   instructor_mission::text_parser srv;
   ros::ServiceClient client = n_client.serviceClient<instructor_mission::text_parser>("/ros_parser");
   std::string received_highlevel_cmd = req.goal;
-  std::size_t found = req.goal.find_first_of(",");
-  if(found!=std::string::npos) //We are checking if a specific robot was called
-    {
-      find_agent = received_highlevel_cmd.substr(0,received_highlevel_cmd.find(","));
-      // ROS_INFO_STREAM("find_agent: "+find_agent);
-      std::string parsed_cmd00 = received_highlevel_cmd.substr(received_highlevel_cmd.find(", "),received_highlevel_cmd.size());
-      std::string parsed_cmd01 = parsed_cmd00.substr(1,parsed_cmd00.size());
-      // ROS_INFO_STREAM("parsed_cmd00"+parsed_cmd00);
-      // ROS_INFO_STREAM("parsed_cmd01"+parsed_cmd01);
-      srv.request.goal = parsed_cmd01;
-    }else
-    {
-      //  ROS_INFO_STREAM("req.goal: "+req.goal);
-      find_agent = "robot";
-      srv.request.goal = req.goal;
-    }
-
+  ros::ServiceClient client_view = n_client_view.serviceClient<instructor_mission::text_parser>("/add_viewpoint");
+  std::string inp;
+  inp ="get";
+  srv.request.goal = inp;
+  if (client_view.call(srv))
+     {
+     	ROS_INFO_STREAM("Waiting for the Viewpoint");
+	find_agent = srv.response.result;
+      }
+     else
+      {
+     	ROS_ERROR("Failed to call the service in TLDL");
+     	return 1;
+      }
+ std::vector<string> actions = splitString(req.goal, " ");
+ if(actions.size()== 2)
+   {
+     boost::replace_all(req.goal,"Go right","Go right nil");
+     boost::replace_all(req.goal,"Go left","Go left nil");
+     boost::replace_all(req.goal,"Go straight","Go straight nil");
+     boost::replace_all(req.goal,"Go ahead","Go ahead nil");
+   }
+  srv.request.goal = req.goal;
   if (client.call(srv))
      {
      	ROS_INFO_STREAM("Waiting for the TLDL parser");
@@ -191,6 +198,8 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
      	ROS_ERROR("Failed to call the service in TLDL");
      	return 1;
       }
+
+
   std::vector<instructor_mission::Desig> desigs;
   instructor_mission::Desig desig;
   desigs = stringToDesigMsg(srv.response.result);
