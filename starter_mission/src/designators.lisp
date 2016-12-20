@@ -243,7 +243,7 @@ action-list))
                        (setf telem (first
                                     (split-sequence::split-sequence #\:
                                                                     (first
-                                                                     (get-next-elem-depend-on-prev-elem
+                                                                    (get-next-elem-depend-on-prev-elem
                                                                       (second (first list2))
                                                                       (first (first list2))
                                                                       (nth index typelist1))))))
@@ -273,7 +273,9 @@ action-list))
 
 
  (defun gazebo-functions (newliste)
+   (format t "newliste ~a~%" newliste)
    (dotimes (index (length newliste))
+      (format t "~a~%" (desig-prop-value (nth index newliste) :type))
      do(let((pose  (desig-prop-value (nth index newliste) :goal)))
          (cond((string-equal "move" (desig-prop-value (nth index newliste) :type))
                (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
@@ -288,11 +290,11 @@ action-list))
                  (setf rotation-cmd (forward-rotatecmd-to-gazebo new-quad-pose))))
               ((and (string-equal "take-picture" (desig-prop-value (nth index newliste) :type))
                     (equal NIL (desig-prop-value (nth index newliste) :goal)))
+              
                (setf *value* (forward-takecmd-to-gazebo "go")))
-	      ((and (string-equal "take-off" (desig-prop-value (nth index newliste) :type))
-                    (equal NIL (desig-prop-value (nth index newliste) :goal)))
-               (setf *value* (forward-takecmd-to-gazebo "go")))
-              ((and (string-equal "take-picture"   (desig-prop-value (nth index newliste) :type))
+              ((string-equal "take-off" (desig-prop-value (nth index newliste) :type))
+               (setf *value* (forward-takeoff-to-gazebo "go")))
+              ((and (string-equal "take-picture" (desig-prop-value (nth index newliste) :type))
                     (not (null (desig-prop-value (nth index newliste) :goal))))
                (setf pose (desig-prop-value (nth index newliste) :goal))
                (setf value (forward-movecmd-to-gazebo (cl-transforms:x (cl-transforms:origin pose))
@@ -332,5 +334,6 @@ action-list))
                 (setf rotation-cmd (forward-rotatecmd-to-gazebo new-quad-pose)))
              (roslisp:wait-duration 2)       
               (setf *value* (forward-takecmd-to-gazebo "go"))
+                 (format t "*value ~a~%" *value*)
                    (roslisp:wait-duration 2)
                    (setf value (forward-showcmd-to-gazebo *value*)))))))

@@ -50,14 +50,21 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
       if(std::find(without_commas.begin(), without_commas.end(),"repeat") != without_commas.end()) //ein repeat
        {
 	 // ROS_INFO_STREAM("test without_commas[0] "+without_commas[0]);
-	 if(without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
+	 if(without_commas[0].compare("take") == 0 && without_commas[1].compare("off") == 0)
 	    {
-	      desig.action_type.data = without_commas[0]+"-picture";
+	      desig.action_type.data = without_commas[0]+"-off";
 	      desig.actor.data = "red_wasp";
 	      desig.instructor.data = find_agent;//instructor;
 	      desig.viewpoint.data = "human";//viewpoint;
 	      prop.object_relation.data = "null";
-	    }else
+	    }else if (without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
+	   {
+	     desig.action_type.data = without_commas[0]+"-picture";
+	      desig.actor.data = "red_wasp";
+	      desig.instructor.data = find_agent;//instructor;
+	      desig.viewpoint.data = "human";//viewpoint;
+	      prop.object_relation.data = "null";
+	   }else
 	    {
 	      desig.action_type.data = without_commas[0];
 	      desig.actor.data = "red_wasp";
@@ -104,18 +111,24 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
        
 
        }else
-	{
-
-	 //take,pic,tree,null,null,null,false0
+	{	 //take,pic,tree,null,null,null,false0
 	  // ROS_INFO_STREAM("without_commas[0] "+without_commas[0]);
-	  if(without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
+
+	  if(without_commas[0].compare("take") == 0 && without_commas[1].compare("off") == 0)
 	    {
-	      desig.action_type.data = without_commas[0]+"-picture";
+	      desig.action_type.data = without_commas[0]+"-off";
 	      desig.actor.data = find_agent;//instructor;
 	      desig.instructor.data = find_agent;//instructor;
 	      desig.viewpoint.data = "human";//viewpoint;
-	      prop.object_relation.data = "null";
-	    }else
+	      prop.object_relation.data = "null";	 
+	    }else if (without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
+	   {
+	     desig.action_type.data = without_commas[0]+"-picture";
+	      desig.actor.data = find_agent;//instructor;
+	      desig.instructor.data = find_agent;//instructor;
+	      desig.viewpoint.data = "human";//viewpoint;
+	      prop.object_relation.data = "null";	 
+	   }else
 	    {
 	      desig.action_type.data = without_commas[0];
 	      desig.actor.data = find_agent;//instructor;

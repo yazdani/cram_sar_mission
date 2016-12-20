@@ -58,25 +58,33 @@
            (dotimes (incr (length created_desigs))
              do(cond((not (null (desig-prop-value (nth incr created_desigs) :goal)))
                      (let*((action-desig (assign-semantics-to-desig (nth incr created_desigs)))
-                           (viewpoint  (desig-prop-value action-desig :viewpoint))
-                           (sample (reference-by-agent-frame (desig-prop-value action-desig :goal) viewpoint)))
-                       (setf newliste (append newliste
-                                              (list (make-designator :action `((:type ,(desig-prop-value action-desig :type))
-                                                                              (:actor ,(desig-prop-value action-desig :actor))
-                                                                              (:operator ,(desig-prop-value action-desig :operator))
-                                                                              (:viewpoint ,(desig-prop-value action-desig :viewpoint))
-                                                                              (:goal ,sample))))))
-                       (beliefstate:add-designator-to-active-node (nth incr created_desigs))
-                       (beliefstate:add-designator-to-active-node action-desig)
-                       (beliefstate:add-designator-to-active-node (make-designator :action
-                                                                                   `((:type ,(desig-prop-value action-desig :type))
-                                                                                    (:actor ,(desig-prop-value action-desig :actor))
-                                                                                    (:operator ,(desig-prop-value action-desig :operator))
-                                                                                    (:viewpoint ,(desig-prop-value action-desig :viewpoint))
-                                                                                    (:goal ,sample))))))
+                           (viewpoint  (desig-prop-value action-desig :viewpoint)))
+                       (cond ((not (equal (caar (desig:properties (desig-prop-value action-desig :goal))) :null))
+                           (setf sample (reference-by-agent-frame (desig-prop-value action-desig :goal) viewpoint))
+                              (setf newliste (append newliste
+                                                     (list (make-designator :action `((:type ,(desig-prop-value action-desig :type))
+                                                                                      (:actor ,(desig-prop-value action-desig :actor))
+                                                                                      (:operator ,(desig-prop-value action-desig :operator))
+                                                                                      (:viewpoint ,(desig-prop-value action-desig :viewpoint))
+                                                                                      (:goal ,sample))))))
+                              (beliefstate:add-designator-to-active-node (nth incr created_desigs))
+                              (beliefstate:add-designator-to-active-node action-desig)
+                              (beliefstate:add-designator-to-active-node (make-designator :action
+                                                                                          `((:type ,(desig-prop-value action-desig :type))
+                                                                                            (:actor ,(desig-prop-value action-desig :actor))
+                                                                                            (:operator ,(desig-prop-value action-desig :operator))
+                                                                                            (:viewpoint ,(desig-prop-value action-desig :viewpoint))
+                                                                                            (:goal ,sample)))))
+                             (t (setf newliste (append newliste
+                                                     (list (make-designator :action `((:type ,(desig-prop-value action-desig :type))
+                                                                                      (:actor ,(desig-prop-value action-desig :actor))
+                                                                                      (:operator ,(desig-prop-value action-desig :operator))
+                                                                                      (:viewpoint ,(desig-prop-value action-desig :viewpoint))
+                                                                                      (:goal NIL))))))))))
                     (t (setf newliste (append newliste (list (nth incr created_desigs))))
                         (beliefstate:add-designator-to-active-node (nth incr created_desigs))))))
           (t (setf newliste NIL)))
+    (format t "newliste ~a~%" newliste)
     (beliefstate:stop-node id)
     (beliefstate:extract-files :name "INTERPRET-INSTRUCTION-DESIGNATOR")
     (format t "hieeeer ~a ~%" newliste)
@@ -173,6 +181,7 @@
 ;;client-service to gazebo:take-picture quadrotor
 (defun forward-showcmd-to-gazebo (tmp)
  ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
+  (format t "value is : ~a~%" tmp)
   (let((value NIL))
     (if (roslisp:wait-for-service "show_image" 10)
         (setf value (img_mission-srv:result (roslisp:call-service "show_image"
@@ -180,11 +189,8 @@
                                                                   :goal tmp))))
     value))
 
-(defun forward-showcmd-to-gazebo (tmp)
+(defun forward-takeoff-to-gazebo (tmp)
  ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
-  (let((value NIL))
     (if (roslisp:wait-for-service "takeOff" 10)
-        (setf value (img_mission-srv:result (roslisp:call-service "takeOff"
-                                                                  'img_mission-srv::returnString
-                                                                  :goal tmp))))
-    value))
+        (roslisp:call-service "takeOff"
+                              'quadrotor_controller-srv::scan_reg                                                                  :start tmp)))

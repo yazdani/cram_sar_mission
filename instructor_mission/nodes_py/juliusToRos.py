@@ -15,7 +15,8 @@ path=''
 def callJulius(port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', port))
-    p = Popen(['julius', '-C',rospack.get_path('instructor_mission')+'/julius_files/sherpa.jconf','-input','mic'], stdout= s, stderr= s)
+    p = Popen(['padsp','julius', '-C',rospack.get_path('instructor_mission')+'/julius_files/sherpa.jconf','-input','mic'], stdout= s, stderr= s)
+#    print "TEEEST"
 
 def recognizer():
     pub = rospy.Publisher('/recognizer/output',String, queue_size=10)
@@ -39,12 +40,8 @@ def recognizer():
                 data = "GO AHEAD"
             elif data == "GOLEFT":
                 data = "GO LEFT"
-            elif data == "TAKEPICTURE":
-                data = "TAKE PICTURE"
-            elif data == "SHOWPICTURE":
-                data = "SHOW PICTURE"
-            elif data == "SCANAREA":
-                data = "SCAN AREA"
+            elif data == "TAKEOFF":
+                data = "TAKE OFF"
             msg.data = data
             pub.publish(msg)
 

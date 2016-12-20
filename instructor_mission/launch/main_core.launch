@@ -6,4 +6,6 @@
   <node pkg="instructor_mission" type="main_server" name="main_server" respawn="false" />
  <node name="viewpoint_server" pkg="instructor_mission" type="viewpoint_server.py"/>
   <!--node pkg="starter_mission" type="start_reasoning_service" name="start_reasoning_service" respawn="false" /-->
+<node name="gui" pkg="instructor_mission" type="gui.py"/>
+<node name="juliusToRos" pkg="instructor_mission" type="juliusToRos.py"/>
 </launch>

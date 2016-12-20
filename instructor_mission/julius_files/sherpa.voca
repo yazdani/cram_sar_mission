@@ -14,51 +14,19 @@ GO              g ow
 LOOK            l uh k
 SEARCH          s er ch
 
-% ACTION_SCAN
-SCAN            s k eh n
-
-% AREA
-AREA    eh r iy aa
-
-
-% FOREST
-FOREST    f ao r ah s t
-
 % ACTION_SCAN_AREA
 SCANAREA     s k eh n eh r iy aa 
-SCANFOREST   s k eh n f ao r ah s t
-
-
-
-% SPATIAL_FOUR
-LEFT       l eh f t
-RIGHT      r ay t
-STRAIGHT   s t r ay t
-
-% DIRECTION_THERE
-THERE    dh eh r
 
 % SPATIAL_N
 LEFT       l eh f t
 RIGHT      r ay t
 BEHIND     b iy t ay n d
-
-% AROUND     
 AROUND    er aw n d 
 
 % OBJECT_N
 TREE      t r iy
-BRIDGE    b r ih jh 
-TUNNEL    t ah n ae l
-FOREST    f ao r ah s t
-LAKE      l ey k
-ROAD      r ow d
 ROCK      r aa k
 HOUSE     hh aw  s
-
-% OBJECT_KITE
-KITE      k ay t
-
 
 % OBJECT_VICTIM
 VICTIM      v ih k t ih m
@@ -69,24 +37,6 @@ TO      t uw
 
 % PROP_FOR
 FOR    f ao r
-
-% AGENT_NAME
-RED   r eh d 
-BLUE   b l uw
-
-% AGENT_NAME_ADD
-DONKEY  d ah n k ey
-HAWK     hh ao k
-
-
-% WASP
-WASP    w aa s p
-
-% ACTION_CHARGE
-CHARGE   ch aa r jh
-
-% ACTION_STOP
-STOP        s t aa p
 
 % ACTION_TAKE_OFF
 TAKEOFF    t ey k ao f
@@ -103,29 +53,13 @@ SHOW       sh ow
 % PICTURE
 PICTURE  p ih k ch er
 
-% WORD_CUSS
-
 % SWITCH
 SWITCH    s w ih ch 
 
-% COMEBACK
-COMEBACK    k ah m b ae k 
-
-% FOLLOW
-FOLLOW   f aa l ow
-
-%ME
-ME      m iy
-
 % OF
-OF     ao f
-
-% LAND
-LAND  l ae n d
+OF     aa f
 
 % IN_FRONT
 INFRONT    ih n f r aa n t
 
-% YOUR
-YOUR       y  uh r
 
