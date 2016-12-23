@@ -29,7 +29,7 @@
 (in-package :starter-mission)
 
 (defvar *sem-map* NIL)
-
+(defvar *wasp-pose* NIL)
 (defun start-my-ros ()
   (roslisp-utilities:startup-ros)
   (setf *sem-map* (sem-map-utils:get-semantic-map)))
@@ -37,7 +37,7 @@
 ;; ROSSERVICE FOR DOING REASONING
 (defun start_reasoning_service ()
   (hmidesig-call))
-
+ 
 ;; DEFINITION OF ROSSERVICE SERVER FOR CRAM
 (defun hmidesig-call ()
  (roslisp-utilities:startup-ros :name "start_hmidesig_service")
@@ -51,16 +51,23 @@
 ;; high-level designator
 (roslisp:def-service-callback instructor_mission-srv::HMIDesig (desigs)
   (setf *sem-map* (sem-map-utils:get-semantic-map))
+  (if (null *wasp-pose*)
+       (setf *wasp-pose* (get-robot-pose)))
   (let ((id  (beliefstate:start-node "INTERPRET-INSTRUCTION-DESIGNATOR" NIL 2))
         (newliste '())
+        (felem NIL) (sample NIL)
         (created_desigs (create-desigs-based-on-hmi-msgs desigs)))
     (cond ((not (null (length created_desigs)))
            (dotimes (incr (length created_desigs))
              do(cond((not (null (desig-prop-value (nth incr created_desigs) :goal)))
                      (let*((action-desig (assign-semantics-to-desig (nth incr created_desigs)))
                            (viewpoint  (desig-prop-value action-desig :viewpoint)))
-                       (cond ((not (equal (caar (desig:properties (desig-prop-value action-desig :goal))) :null))
-                           (setf sample (reference-by-agent-frame (desig-prop-value action-desig :goal) viewpoint))
+                           (sleep 8.0)
+                           (format t "test ~a~%" (cadar (desig:properties (desig-prop-value action-desig :goal))))
+                       (cond ((and (not (equal (caar (desig:properties (desig-prop-value action-desig :goal))) :null))
+                                   (not (null (cadar (desig:properties (desig-prop-value action-desig :goal))))))
+                              (setf felem (cadar (desig:properties (desig-prop-value action-desig :goal))))     
+                              (setf sample (reference-by-agent-frame (desig-prop-value action-desig :goal) viewpoint))
                               (setf newliste (append newliste
                                                      (list (make-designator :action `((:type ,(desig-prop-value action-desig :type))
                                                                                       (:actor ,(desig-prop-value action-desig :actor))
@@ -75,6 +82,26 @@
                                                                                             (:operator ,(desig-prop-value action-desig :operator))
                                                                                             (:viewpoint ,(desig-prop-value action-desig :viewpoint))
                                                                                             (:goal ,sample)))))
+                             ((and (not (equal (caar (desig:properties (desig-prop-value action-desig :goal))) :null))
+                                   (string-equal "come" (cadar (desig:properties action-desig)))
+                                   (null  (cadar (desig:properties (desig-prop-value action-desig :goal)))))
+                               (format t "relations123 ~a~%" action-desig)
+                               (setf newliste (append newliste
+                                                     (list (make-designator :action `((:type "moving")
+                                                                                      (:actor ,(desig-prop-value action-desig :actor))
+                                                                                      (:operator ,(desig-prop-value action-desig :operator))
+                                                                                      (:viewpoint ,(desig-prop-value action-desig :viewpoint))
+                                                                                      (:goal ,*wasp-pose*)))))))
+                              ((and (not (equal (caar (desig:properties (desig-prop-value action-desig :goal))) :null))
+                                   (null  (cadar (desig:properties (desig-prop-value action-desig :goal)))))
+                               (format t "relations ~a~%" action-desig)
+                              (setf sample (checking-relation (desig-prop-value action-desig :viewpoint) (caar (desig:properties (desig-prop-value action-desig :goal)))))
+                              (setf newliste (append newliste
+                                                     (list (make-designator :action `((:type "moving")
+                                                                                      (:actor ,(desig-prop-value action-desig :actor))
+                                                                                      (:operator ,(desig-prop-value action-desig :operator))
+                                                                                      (:viewpoint ,(desig-prop-value action-desig :viewpoint))
+                                                                                      (:goal ,sample)))))))
                              (t (setf newliste (append newliste
                                                      (list (make-designator :action `((:type ,(desig-prop-value action-desig :type))
                                                                                       (:actor ,(desig-prop-value action-desig :actor))
@@ -141,6 +168,19 @@
                                                :qw qw))))
 
 
+(defun forward-movingcmd-to-gazebo (x y z qx qy qz qw)
+ ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
+    (if (roslisp:wait-for-service "setRobotRelation" 10)
+        (format t "~a~%" (roslisp:call-service "setRobotRelation"
+                                               'quadrotor_controller-srv::cmd_points
+                                               :x x
+                                               :y y
+                                               :z z
+                                               :qx qx
+                                               :qy qy
+                                               :qz qz
+                                               :qw qw))))
+
 
 ;;client-service to gazebo: move quadrotor
 (defun forward-rotatecmd-to-gazebo (pose)
@@ -148,6 +188,7 @@
  ;;     (remove-local-tf-publisher *pub-intern*))
  ;; (setf *pub-intern* (create-local-tf-publisher pose "pub-intern"))
  ;; (roslisp:with-ros-node ("setRobotPoints_nodecall")
+  (format t "pose ~a~%" pose)
 (let* ((vec (cl-transforms:origin pose))
       (quat (cl-transforms:orientation pose))
       (x (cl-transforms:x vec))

@@ -40,7 +40,7 @@
          (viewpoint "human")
          (poses '()))
     (dotimes (index (length sem-keys))
-      (let*((pose (get-elem-pose (nth index sem-keys)))
+      (let*((pose (get-elem-by-pose (nth index sem-keys)))
             (pub (cl-tf:set-transform *tf* (cl-transforms-stamped:make-transform-stamped "map" (nth index sem-keys) (roslisp:ros-time) (cl-transforms:origin pose) (cl-transforms:orientation pose))))
             (obj-pose2 (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* "map" (nth index sem-keys))))
             (obj-pose (cl-transforms-stamped:transform->pose (cl-tf:lookup-transform *tf* viewpoint (nth index sem-keys))))   
@@ -125,12 +125,12 @@
 ;;; 
 ;;;
 (defun get-next-elem-depend-on-prev-elem (typ spatial name)
-  (format t "typ ~a~% spatial ~a~% name ~a~%" typ spatial name)
+  ;;(format t "typ ~a~% spatial ~a~% name ~a~%" typ spatial name)
   (let*((liste (get-elems-of-semmap-by-type typ))
         (resultlist '())
         (result NIL))
-   (format t "liste ~a~%" liste)
-    (format t "typ ~a~% spatial ~a~% name ~a~%" typ spatial name)
+   ;;(format t "liste ~a~%" liste)
+    ;;(format t "typ ~a~% spatial ~a~% name ~a~%" typ spatial name)
    (dotimes (index (length liste))
        (format t "hieer ~%")
      (if (and (not (null (checker-elems-by-relation->get-elems-by-tf
@@ -142,7 +142,7 @@
                                                             (get-elem-by-pose
                                                              (nth index liste))
                                                             (get-elem-by-pose name))))))))
-    (format t "resultlist ~a~%" resultlist)
+    ;;(format t "resultlist ~a~%" resultlist)
     (if (null resultlist)
         (setf result NIL)
         (setf result  (sort-list resultlist)))
@@ -167,7 +167,7 @@
                                                         (nth index liste))
                                                        (get-elem-by-pose name))))))))
     (setf result (sort-list resultlist))
-    (format t "elem result ~a~%" result)
+   ;; (format t "elem result ~a~%" result)
     result))
 
 (defun get-prev-elem-depend-on-next-elem-no-con (typ spatial name)
@@ -185,15 +185,15 @@
                                                         (nth index liste))
                                                        (get-elem-by-pose name))))))))
     (setf result (sort-list resultlist))
-    (format t "elem result ~a~%" result)
+    ;;(format t "elem result ~a~%" result)
     result))
 
 (defun get-prev-elem-depend-on-next-elem (typ spatial name)
-  (format t "get-next-elem ~a~%"name)
+  ;;(format t "get-next-elem ~a~%"name)
  (let*((liste (get-elems-of-semmap-by-type typ))
        (resultlist '()))
    (dotimes (index (length liste))
-     (format t "get-next-elem ~a~%" (nth index liste))
+   ;;  (format t "get-next-elem ~a~%" (nth index liste))
         (if  (and (not (null (checker-elems-by-relation->get-elems-by-tf
                    name (nth index liste) spatial)))
                   (> 5 (get-distance (get-elem-by-pose name) (get-elem-by-pose (nth index liste)))))
@@ -203,11 +203,11 @@
                                                             (get-elem-by-pose
                                                              (nth index liste))
                                                             (get-elem-by-pose name))))))))
-   (format t "neue luste ~a~%" resultlist)
+   ;;(format t "neue luste ~a~%" resultlist)
    (first (split-sequence:split-sequence #\: (first (sort-list resultlist))))))
 
 (defun get-elems-of-semmap-by-type (type)
-  (format t "get-elems-of-semmap-by-type ~a~%" type)
+ ;; (format t "get-elems-of-semmap-by-type ~a~%" type)
   (let*((sem-hash (slot-value *sem-map* 'sem-map-utils:parts))
        (sem-keys (hash-table-keys sem-hash))
        (types '()))
@@ -215,7 +215,7 @@
       (if (string-equal type (get-elem-by-type (nth index sem-keys)))
           (setf types (append types
                                (list (nth index sem-keys))))))
-    (format t "ttype ~a~%" types)
+    ;;(format t "ttype ~a~%" types)
     types))
          
 
@@ -239,7 +239,7 @@
                            (get-elem-by-type (first (split-sequence:split-sequence #\: (nth index liste)))))
              (setf objtypliste (append objtypliste (list (nth index liste))))
              (cond ((> 3 (length objdistliste))
-                    (format t "index ~a~%"  (nth index liste))
+     ;;               (format t "index ~a~%"  (nth index liste))
                      (setf objdistliste (append objdistliste
                                                (list (get-elem-by-bboxsize (first (split-sequence:split-sequence #\: (nth index liste))))))))))))
    (if(string-equal "small" shape)
@@ -349,15 +349,15 @@
 (defun cam-depth-tf-map-transform ()
   (cl-transforms-stamped:lookup-transform *tf* "map" "camera_depth_frame"))
 
-;; (defun create-local-tf-publisher (robot-pose name)
-;;    (let*((pub (cl-tf:make-transform-broadcaster)))
-;;  (cl-tf:send-static-transforms pub 1.0 "quadpose" (cl-transforms-stamped:make-transform-stamped "map" name (roslisp:ros-time) (cl-transforms:origin robot-pose) (cl-transforms:orientation robot-pose)))))
+(defun create-local-tf-publisher (robot-pose name)
+   (let*((pub (cl-tf:make-transform-broadcaster)))
+ (cl-tf:send-static-transforms pub 1.0 "quadpose" (cl-transforms-stamped:make-transform-stamped "map" name (roslisp:ros-time) (cl-transforms:origin robot-pose) (cl-transforms:orientation robot-pose)))))
 
-;; (defun remove-local-tf-publisher (thread)
-;;   (when (sb-thread:thread-alive-p thread)
-;;     (handler-case
-;;         (prog1 t (sb-thread:terminate-thread thread))
-;;       (error () nil))))
+(defun remove-local-tf-publisher (thread)
+  (when (sb-thread:thread-alive-p thread)
+    (handler-case
+        (prog1 t (sb-thread:terminate-thread thread))
+      (error () nil))))
 
 
 
@@ -480,7 +480,7 @@ quadrotor, so the rotation is on x-axis"
     (cond((equal elem NIL)
           (let ((new-liste (get-element-with-ground-calculation-based-on-gesture vec)))
             (dotimes (jindex (length new-liste))
-                (if (string-equal (get-elem-type (nth jindex new-liste)) obj)
+                (if (string-equal (get-elem-by-type (nth jindex new-liste)) obj)
                     (setf elem  (nth jindex liste)))))))
     (if (equal NIL elem)
         (setf elem (get-specific-elem-closeto-human obj)))
@@ -490,7 +490,7 @@ quadrotor, so the rotation is on x-axis"
 (defun filling-desigs-with-semantics (viewpoint location-designator)
   (let ((desig-properties (desig:properties location-designator))
          (desig NIL))
-    (format t "desig-properties ~a~%" desig-properties)
+   ;; (format t "desig-properties ~a~%" desig-properties)
      ;;if property-list includes one key,e.g. ((:property small)(:right tree))
      (cond ((= 1 (length desig-properties))
             (setf desig (one-list-internal-property viewpoint (first desig-properties))))
@@ -512,13 +512,13 @@ quadrotor, so the rotation is on x-axis"
 
 
 (defun get-new-elem-by-name-type-shape-spatial (name type shape spatial)
-  (format t "name ~a~%
-type ~a~% shape ~a~% spatial ~a~%" name type shape spatial)
+ ;; (format t "name ~a~%
+;;type ~a~% shape ~a~% spatial ~a~%" name type shape spatial)
   (let ((liste (get-elems-agent-front-by-type type)) ;;(get-elems-of-semmap-by-type type))
         (resultlist '())
         (result NIL)
         (tmplist NIL))
-    (format t "liste ~a~%" liste)
+  ;; (format t "liste ~a~%" liste)
     (dotimes (index (length liste))
       (if (not (null (checker-elems-by-relation->get-elems-by-tf
                       (nth index liste) name spatial)))
@@ -530,10 +530,10 @@ type ~a~% shape ~a~% spatial ~a~%" name type shape spatial)
                                                             (get-elem-by-pose name))))))))
     (setf resultlist (sort-list resultlist))
     (dotimes (jndex (length resultlist))
-        (format t "tmplist1 ~a~%" tmplist)
+    ;;    (format t "tmplist1 ~a~%" tmplist)
       (setf tmplist (append tmplist (list (get-elem-by-bboxsize
                              (first (split-sequence:split-sequence #\: (nth jndex resultlist))))))))
-    (format t "tmplist ~a~%" tmplist)
+;;    (format t "tmplist ~a~%" tmplist)
     (if(string-equal "big" shape)
        (cond((> (first tmplist) (second tmplist))
              (setf result (first resultlist)))
@@ -552,13 +552,13 @@ type ~a~% shape ~a~% spatial ~a~%" name type shape spatial)
     result))
 
 (defun get-first-elem-by-name-type-shape-spatial- (name type shape spatial)
-  (format t "name ~a~%
-type ~a~% shape ~a~% spatial ~a~%" name type shape spatial)
+  ;;(format t "name ~a~%
+;;type ~a~% shape ~a~% spatial ~a~%" name type shape spatial)
   (let ((liste (get-elems-agent-front-by-type type)) ;;(get-elems-of-semmap-by-type type))
         (resultlist '())
         (result NIL)
         (tmplist NIL))
-    (format t "liste ~a~%" liste)
+  ;;  (format t "liste ~a~%" liste)
     (dotimes (index (length liste))
       (if (not (null (checker-elems-by-relation->get-elems-by-tf
                       name (nth index liste) spatial)))
@@ -570,10 +570,10 @@ type ~a~% shape ~a~% spatial ~a~%" name type shape spatial)
                                                             (get-elem-by-pose name))))))))
     (setf resultlist (sort-list resultlist))
     (dotimes (jndex (length resultlist))
-        (format t "tmplist1 ~a~%" tmplist)
+    ;;    (format t "tmplist1 ~a~%" tmplist)
       (setf tmplist (append tmplist (list (get-elem-by-bboxsize
                              (first (split-sequence:split-sequence #\: (nth jndex resultlist))))))))
-    (format t "tmplist ~a~%" tmplist)
+    ;;(format t "tmplist ~a~%" tmplist)
     (if(string-equal "big" shape)
        (cond((> (first tmplist) (second tmplist))
              (setf result (first resultlist)))
@@ -613,3 +613,41 @@ type ~a~% shape ~a~% spatial ~a~%" name type shape spatial)
          (setf resultlist (append resultlist (list (first (split-sequence:split-sequence #\: (nth index liste))))))))
     resultlist))
             
+(defun checking-relation (robot relation)
+  (let* ((human-pose (get-human-pose))
+         (human-ori (cl-transforms:orientation human-pose))
+         (robot-pose (cl-transforms:transform->pose  (cl-tf:lookup-transform *tf* "map" "base_link")))
+         (robot-loc (cl-transforms:origin robot-pose))
+         (result NIL)
+         (pose NIL))
+    (if (string-equal robot "human")
+        (setf pose (cl-transforms:make-pose robot-loc human-ori))
+        (setf pose (cl-transforms:make-pose robot-loc (cl-transforms:orientation robot-pose))))
+    (cl-tf:set-transform *tf*
+                         (cl-transforms-stamped:make-transform-stamped
+                          "map" "relation"
+                          (roslisp:ros-time)
+                          (cl-transforms:origin pose)
+                          (cl-transforms:orientation pose)))
+    (cond((string-equal "right" relation)
+          (setf pose (cl-transforms-stamped:make-pose-stamped "relation" 0.0
+                                                          (cl-transforms:make-3d-vector 0 -7 0)
+                                                          (cl-transforms:make-identity-rotation)))
+          (setf result (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose pose :target-frame "map"))))
+         ((string-equal "left" relation)
+          (setf pose (cl-transforms-stamped:make-pose-stamped "relation" 0.0
+                                                          (cl-transforms:make-3d-vector 0 7 0)
+                                                          (cl-transforms:make-identity-rotation)))
+          (setf result (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose pose :target-frame "map"))))
+         ((string-equal "straight" relation)
+          (setf pose (cl-transforms-stamped:make-pose-stamped "relation" 0.0
+                                                          (cl-transforms:make-3d-vector 7 0 0)
+                                                          (cl-transforms:make-identity-rotation)))
+          (setf result (cl-transforms-stamped:pose-stamped->pose (cl-tf:transform-pose *tf* :pose pose :target-frame "map")))))
+    (publish-pose result :id 100)
+    result))
+
+(defun get-robot-pose ()
+  (cl-transforms-stamped:transform->pose
+   (cl-tf:lookup-transform *tf* "map" "base_link")))
+  

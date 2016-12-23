@@ -45,6 +45,8 @@ def publisher_callback(data):
             result = "SCAN AREA"
          elif result == "TAKEOFF":
             result="TAKE OFF"
+         elif result == "NEXTTO":
+            result="NEXT"
          window.insert(INSERT,'Genius:  ','hcolor')
          window.insert(END,result.upper()+'\n','hnbcolor')
          string = String()
@@ -116,7 +118,7 @@ if __name__ == "__main__":
    #package path
    rospack = rospkg.RosPack()
    #rospack.list_pkgs() 
-   path = rospack.get_path('hmi_interpreter')
+   path = rospack.get_path('instructor_mission')
    path = path+"/img"
    #mic
    b1 = Button(master, command=change_image_field)

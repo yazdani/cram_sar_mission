@@ -14,7 +14,7 @@ import os
 import commands
 from std_msgs.msg import String
 
-agent="no"
+agent="human"
 def call_viewpoint(req):
     print "---------------------------------------------first call"
     global agent
@@ -23,7 +23,7 @@ def call_viewpoint(req):
     print req.goal
     if req.goal != "get":
         print agent
-        agent = "yes"
+        agent = req.goal
         print "agent123: "
         print agent
         return text_parserResponse(agent)
@@ -31,7 +31,7 @@ def call_viewpoint(req):
         print "agent456: "
         print agent
         tmp = agent
-        agent = "no"       
+        agent = "human"       
         return text_parserResponse(tmp)
 
 def get_viewpoint_server():

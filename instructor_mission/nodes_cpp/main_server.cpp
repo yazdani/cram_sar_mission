@@ -54,22 +54,22 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	    {
 	      desig.action_type.data = without_commas[0]+"-off";
 	      desig.actor.data = "red_wasp";
-	      desig.instructor.data = find_agent;//instructor;
-	      desig.viewpoint.data = "human";//viewpoint;
+	      desig.viewpoint.data = find_agent;//instructor;
+	      desig.instructor.data = "human";//viewpoint;
 	      prop.object_relation.data = "null";
 	    }else if (without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	   {
 	     desig.action_type.data = without_commas[0]+"-picture";
 	      desig.actor.data = "red_wasp";
-	      desig.instructor.data = find_agent;//instructor;
-	      desig.viewpoint.data = "human";//viewpoint;
+	      desig.viewpoint.data = find_agent;//instructor;
+	      desig.instructor.data = "human";//viewpoint;
 	      prop.object_relation.data = "null";
 	   }else
 	    {
 	      desig.action_type.data = without_commas[0];
 	      desig.actor.data = "red_wasp";
-	      desig.instructor.data = find_agent;//instructor;
-	      desig.viewpoint.data = "human";//viewpoint;
+	      desig.viewpoint.data = find_agent;//instructor;
+	      desig.instructor.data = "human";//viewpoint;
 	      prop.object_relation.data = without_commas[1];
 	    }
 	 //Go to your LEFT  => move(to,robot(left))
@@ -118,22 +118,22 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	    {
 	      desig.action_type.data = without_commas[0]+"-off";
 	      desig.actor.data = find_agent;//instructor;
-	      desig.instructor.data = find_agent;//instructor;
-	      desig.viewpoint.data = "human";//viewpoint;
+	      desig.viewpoint.data = find_agent;//instructor;
+	      desig.instructor.data = "human";//viewpoint;
 	      prop.object_relation.data = "null";	 
 	    }else if (without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	   {
 	     desig.action_type.data = without_commas[0]+"-picture";
 	      desig.actor.data = find_agent;//instructor;
-	      desig.instructor.data = find_agent;//instructor;
-	      desig.viewpoint.data = "human";//viewpoint;
+	      desig.viewpoint.data = find_agent;//instructor;
+	      desig.instructor.data = "human";//viewpoint;
 	      prop.object_relation.data = "null";	 
 	   }else
 	    {
 	      desig.action_type.data = without_commas[0];
 	      desig.actor.data = find_agent;//instructor;
-	      desig.instructor.data = find_agent;//instructor;
-	      desig.viewpoint.data = "human";//viewpoint;
+	      desig.viewpoint.data = find_agent;//instructor;
+	      desig.instructor.data = "human";//viewpoint;
 	      prop.object_relation.data = without_commas[1];
 	    }
 	  if(without_commas[2].compare("left") == 0 || without_commas[2].compare("right") == 0)
@@ -181,6 +181,88 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
   std::string received_highlevel_cmd = req.goal;
   ros::ServiceClient client_view = n_client_view.serviceClient<instructor_mission::text_parser>("/add_viewpoint");
   std::string inp;
+ 
+  std::vector<string> actions = splitString(req.goal, " ");
+  if(actions.size()== 2)
+   {
+     boost::replace_all(req.goal,"Go right","Go right nil");
+     boost::replace_all(req.goal,"Go left","Go left nil");
+     boost::replace_all(req.goal,"Come back","Come back nil");
+     boost::replace_all(req.goal,"Go straight","Go straight nil");
+     boost::replace_all(req.goal,"Go ahead","Go ahead nil");
+     boost::replace_all(req.goal,"Move right","Go right nil");
+     boost::replace_all(req.goal,"Move left","Go left nil");
+     boost::replace_all(req.goal,"Move straight","Go straight nil");
+     boost::replace_all(req.goal,"Move ahead","Go ahead nil");
+   }
+ 
+  if(actions.size() == 4)
+   {
+     if (req.goal.compare("Go to your right") == 0)
+       {
+         boost::replace_all(req.goal,"Go to your right","Go right nil");
+         inp = "wasp";
+         srv.request.goal = inp;
+         if (client_view.call(srv))
+           {
+             ROS_INFO_STREAM("Waiting for the Viewpoint");
+             find_agent = srv.response.result;
+           }
+         else
+           {
+             ROS_ERROR("Failed to call the service in Viewpoint");
+             return 1;
+           }
+       }else if (req.goal.compare("Go to your left") == 0)
+       {
+         boost::replace_all(req.goal,"Go to your left","Go left nil");
+         inp = "wasp";
+         srv.request.goal = inp;
+         if (client_view.call(srv))
+           {
+             ROS_INFO_STREAM("Waiting for the Viewpoint");
+             find_agent = srv.response.result;
+           }
+         else
+           {
+             ROS_ERROR("Failed to call the service in Viewpoint");
+             return 1;
+           }
+       }else if (req.goal.compare("Move to your left") == 0)
+       {
+         boost::replace_all(req.goal,"Move to your left","Go left nil");
+         inp = "wasp";
+         srv.request.goal = inp;
+         if (client_view.call(srv))
+           {
+             ROS_INFO_STREAM("Waiting for the Viewpoint");
+             find_agent = srv.response.result;
+           }
+         else
+           {
+             ROS_ERROR("Failed to call the service in Viewpoint");
+             return 1;
+           }
+       }else if  (req.goal.compare("Move to your right") == 0)
+       {
+         boost::replace_all(req.goal,"Move to your right","Go right nil");
+         inp = "wasp";
+         srv.request.goal = inp;
+         if (client_view.call(srv))
+           {
+             ROS_INFO_STREAM("Waiting for the Viewpoint");
+             find_agent = srv.response.result;
+           }
+         else
+           {
+             ROS_ERROR("Failed to call the service in Viewpoint");
+             return 1;
+           }
+       }
+     
+   }
+  ROS_INFO_STREAM("REQ-GOAL");
+  ROS_INFO_STREAM(req.goal);
   inp ="get";
   srv.request.goal = inp;
   if (client_view.call(srv))
@@ -190,17 +272,10 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
       }
      else
       {
-     	ROS_ERROR("Failed to call the service in TLDL");
+     	ROS_ERROR("Failed to call the service in Viewpoint");
      	return 1;
       }
- std::vector<string> actions = splitString(req.goal, " ");
- if(actions.size()== 2)
-   {
-     boost::replace_all(req.goal,"Go right","Go right nil");
-     boost::replace_all(req.goal,"Go left","Go left nil");
-     boost::replace_all(req.goal,"Go straight","Go straight nil");
-     boost::replace_all(req.goal,"Go ahead","Go ahead nil");
-   }
+
   srv.request.goal = req.goal;
   if (client.call(srv))
      {

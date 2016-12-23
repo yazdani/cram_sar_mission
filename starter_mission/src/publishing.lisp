@@ -103,6 +103,41 @@
                              (b color) 0.0 ; (random 1.0)
                              (a color) 1.0)))))
 
+(defun publish-elempose (pose num vec)
+  (setf *marker-publisher*
+        (roslisp:advertise "~location_marker" "visualization_msgs/Marker"))
+  (let* ((point (cl-transforms:origin pose))
+         (rot (cl-transforms:orientation pose)))
+    (when *marker-publisher*
+      (roslisp:publish *marker-publisher*
+               (roslisp:make-message "visualization_msgs/Marker"
+                             (stamp header) (roslisp:ros-time)
+                             (frame_id header)
+                             (typecase pose
+                               (cl-transforms-stamped:pose-stamped (cl-transforms-stamped:frame-id  pose))
+                               (t cram-tf:*fixed-frame*))
+
+                             ns "kipla_locations"
+                             id num
+                             type (roslisp:symbol-code 
+                                   'visualization_msgs-msg:<marker> :cylinder)
+                             action (roslisp:symbol-code
+                                     'visualization_msgs-msg:<marker> :add)
+                             (x position pose) (cl-transforms:x point)
+                             (y position pose) (cl-transforms:y point)
+                             (z position pose) 1.0
+                             (x orientation pose) (cl-transforms:x rot)
+                             (y orientation pose) (cl-transforms:y rot)
+                             (z orientation pose) (cl-transforms:z rot)
+                             (w orientation pose) (cl-transforms:w rot)
+                             (x scale) 4
+                             (y scale) 4
+                             (z scale) 2.0
+                             (r color) (cl-transforms:x vec)
+                             (g color) (cl-transforms:y vec)
+                             (b color) (cl-transforms:z vec)
+                             (a color) 0.4)))))
+
 (defun cam-set-markers ()
   (format t "cl-tf:*fixed-frame* ~a~%" cram-tf:*fixed-frame* )
   (publish-pose (cl-transforms:transform->pose (cam-depth-tfmap-transform)) :id 0)

@@ -9,6 +9,11 @@
 MOVE            m uw v
 GO              g ow
 
+% ACTION_COME
+COME   k aa m
+
+% BACK
+BACK    b ae k
 
 % ACTION_VISIBILITY
 LOOK            l uh k
@@ -21,16 +26,22 @@ SCANAREA     s k eh n eh r iy aa
 LEFT       l eh f t
 RIGHT      r ay t
 BEHIND     b iy t ay n d
-AROUND    er aw n d 
+AROUND     er aw n d 
+NEXTTO     n eh k s t uw
+
+% SPATIAL_FOUR
+LEFT       l eh f t
+RIGHT      r ay t
 
 % OBJECT_N
 TREE      t r iy
 ROCK      r aa k
 HOUSE     hh aw  s
+PYLON     p ay l aa n
 
 % OBJECT_VICTIM
 VICTIM      v ih k t ih m
-VICTIMS      v ih k t ih m z
+VICTIM      v ih k t ih m z
 
 % PROP_TO
 TO      t uw
@@ -51,10 +62,7 @@ TAKEPICTURE  t ey k aa p ih k ch er
 SHOW       sh ow
 
 % PICTURE
-PICTURE  p ih k ch er
-
-% SWITCH
-SWITCH    s w ih ch 
+PICTURE  p ih k ch er 
 
 % OF
 OF     aa f
@@ -62,4 +70,9 @@ OF     aa f
 % IN_FRONT
 INFRONT    ih n f r aa n t
 
+% PROPERTIES
+BIG    b ih g
+SMALL   s m ao l
 
+% YOUR
+YOUR   y ao r

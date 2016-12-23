@@ -15,7 +15,7 @@ path=''
 def callJulius(port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(('127.0.0.1', port))
-    p = Popen(['padsp','julius', '-C',rospack.get_path('instructor_mission')+'/julius_files/sherpa.jconf','-input','mic'], stdout= s, stderr= s)
+    p = Popen(['julius', '-C',rospack.get_path('instructor_mission')+'/julius_files/sherpa.jconf','-input','mic'], stdout= s, stderr= s)
 #    print "TEEEST"
 
 def recognizer():
@@ -52,5 +52,5 @@ def recognizer():
 
 if __name__ == '__main__':
     rospack = rospkg.RosPack()
-    path = rospack.get_path('hmi_interpreter')
+    path = rospack.get_path('instructor_mission')
     recognizer()

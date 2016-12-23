@@ -2,25 +2,33 @@
 1	[</s>]	sil
 2	[MOVE]	m uw v
 2	[GO]	g ow
-3	[LOOK]	l uh k
-3	[SEARCH]	s er ch
-4	[SCANAREA]	s k eh n eh r iy aa
-5	[LEFT]	l eh f t
-5	[RIGHT]	r ay t
-5	[BEHIND]	b iy t ay n d
-5	[AROUND]	er aw n d
-6	[TREE]	t r iy
-6	[ROCK]	r aa k
-6	[HOUSE]	hh aw s
-7	[VICTIM]	v ih k t ih m
-7	[VICTIMS]	v ih k t ih m z
-8	[TO]	t uw
-9	[FOR]	f ao r
-10	[TAKEOFF]	t ey k ao f
-11	[THAT]	dh ae t
-12	[TAKEPICTURE]	t ey k aa p ih k ch er
-13	[SHOW]	sh ow
-14	[PICTURE]	p ih k ch er
-15	[SWITCH]	s w ih ch
-16	[OF]	aa f
-17	[INFRONT]	ih n f r aa n t
+3	[COME]	k aa m
+4	[BACK]	b ae k
+5	[LOOK]	l uh k
+5	[SEARCH]	s er ch
+6	[SCANAREA]	s k eh n eh r iy aa
+7	[LEFT]	l eh f t
+7	[RIGHT]	r ay t
+7	[BEHIND]	b iy t ay n d
+7	[AROUND]	er aw n d
+7	[NEXTTO]	n eh k s t uw
+8	[LEFT]	l eh f t
+8	[RIGHT]	r ay t
+9	[TREE]	t r iy
+9	[ROCK]	r aa k
+9	[HOUSE]	hh aw s
+9	[PYLON]	p ay l aa n
+10	[VICTIM]	v ih k t ih m
+10	[VICTIM]	v ih k t ih m z
+11	[TO]	t uw
+12	[FOR]	f ao r
+13	[TAKEOFF]	t ey k ao f
+14	[THAT]	dh ae t
+15	[TAKEPICTURE]	t ey k aa p ih k ch er
+16	[SHOW]	sh ow
+17	[PICTURE]	p ih k ch er
+18	[OF]	aa f
+19	[INFRONT]	ih n f r aa n t
+20	[BIG]	b ih g
+20	[SMALL]	s m ao l
+21	[YOUR]	y ao r
