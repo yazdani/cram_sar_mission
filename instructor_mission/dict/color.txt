@@ -1,0 +1,9 @@
+green
+black
+yellow
+blue
+white
+darkgreen
+gray
+grey
+darkblue

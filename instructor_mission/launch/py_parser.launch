@@ -1,0 +1,9 @@
+<launch>
+   <node name="py_parser" pkg="instructor_mission" type="py_parser.py">
+    <param name="action" value="$(find instructor_mission)/dict/action.txt"/>
+    <param name="order" value="$(find instructor_mission)/dict/order.txt"/>
+    <param name="description" value="$(find instructor_mission)/dict/description.txt"/>
+    <param name="color" value="$(find instructor_mission)/dict/color.txt"/>
+  </node>
+
+</launch>

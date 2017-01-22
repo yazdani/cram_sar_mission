@@ -18,3 +18,8 @@ mountain
 mountains
 picture
 video
+right
+left
+ahead
+victim
+victims
