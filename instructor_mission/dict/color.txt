@@ -7,3 +7,4 @@ darkgreen
 gray
 grey
 darkblue
+red

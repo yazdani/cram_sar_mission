@@ -6,3 +6,8 @@ follow
 take
 show
 come
+look 
+search
+look-for 
+search-for
+look-at

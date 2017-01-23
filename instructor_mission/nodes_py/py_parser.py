@@ -5,7 +5,7 @@ from instructor_mission.srv import *
 from instructor_mission.msg import *
 import rospy
 from std_msgs.msg import String
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import Point
 import re
 import sys
@@ -35,28 +35,77 @@ def build_msg(read_action, read_order, read_description, read_color, speech_inpu
     desigs = []
     propkey = Propkey()
     propkeys = []
-    rospy.logwarn("propppppppkey")
-    rospy.logwarn(propkey)
+
     for index in range(len(speech_input)):
-        rospy.logwarn("----")
- 
-        rospy.logwarn(speech_input[index])
-        rospy.logwarn(index)
-        rospy.logwarn(len(speech_input))
-        
+
         if speech_input[index] in read_action:
-            rospy.logwarn("action")
-            action1 = speech_input[index]
+            if speech_input[index] != "and":
+                action1 = speech_input[index]
         
         if speech_input[index] in read_order and order1 == "" and index < (len(speech_input) - 1):
-            rospy.logwarn("order123")
             order1 = speech_input[index]
         elif speech_input[index] in read_order and order1 != "" and index < (len(speech_input) - 1):
-            rospy.logwarn("order456")
-            if order1 in read_description:
-                rospy.logwarn("description")
-                description1 = order1
-                order1 = speech_input[index]
+            propkey.object_relation.data = order1
+            propkey.object.data = description1
+            propkey.object_color.data = color1
+            propkey.object_size.data = shape1
+            propkey.object_num.data = num1
+            propkey.flag.data = pointer1
+            propkeys.append(propkey)
+            propkey = Propkey()
+            desig.propkeys = propkeys
+            order1 = speech_input[index]
+
+        if speech_input[index] in read_order and order1 == "" and index == (len(speech_input) - 1):
+            desig.viewpoint.data = viewpoint1
+            desig.action_type.data = action1
+            desig.actor.data = "robot"
+            desig.instructor.data = "busy_genius"
+            propkey.object_relation.data = speech_input[index]
+            propkey.object.data = description1
+            propkey.object_color.data = color1
+            propkey.object_size.data = shape1
+            propkey.object_num.data = num1
+            propkey.flag.data = pointer1
+            propkeys.append(propkey)
+            propkey = Propkey()
+            desig.propkeys = propkeys
+            desigs.append(desig)
+            desig = Desig()
+            break
+
+        if speech_input[index] == "big" or speech_input[index] == "small" and shape1 == "":
+            shape1 = speech_input[index]
+
+        if speech_input[index] in read_color and color1 == "":
+            color1 = speech_input[index]
+
+        if speech_input[index] == "first" or speech_input[index] == "second" or speech_input[index] == "third" and num1 == "":
+            num1 = speech_input[index]
+
+        if speech_input[index] == "and":
+            desig.viewpoint.data = viewpoint1
+            desig.action_type.data = action1
+            desig.actor.data = "robot"
+            desig.instructor.data = "busy_genius"
+            propkey = Propkey()
+            desig.propkeys = propkeys
+            desigs.append(desig)
+            propkeys = []
+            desig = Desig()
+            order1 = ""
+            description1 = ""
+            action1 = ""
+            pointer1 = ""
+            num1 = ""
+            color1 = ""
+
+        if speech_input[index] in read_description and index == (len(speech_input) - 1):
+            if speech_input[index] == "picture":
+                desig.viewpoint.data = viewpoint1
+                desig.action_type.data = action1+"-picture"
+                desig.actor.data = "robot"
+                desig.instructor.data = "busy_genius"
                 propkey.object_relation.data = order1
                 propkey.object.data = description1
                 propkey.object_color.data = color1
@@ -66,66 +115,29 @@ def build_msg(read_action, read_order, read_description, read_color, speech_inpu
                 propkeys.append(propkey)
                 propkey = Propkey()
                 desig.propkeys = propkeys
-                description1 = ""
-    
-        if speech_input[index] == "big" or speech_input[index] == "small" and shape1 == "":
-            shape1 = speech_input[index]
-            print "shape1"
-            print shape1
-
-        if speech_input[index] in read_color and color1 == "":
-            color1 = speech_input[index]
-            print "color1"
-            print color1
-
-        if speech_input[index] == "first" or speech_input[index] == "second" or speech_input[index] == "third" and num1 == "":
-            num1 = speech_input[index]
-            print "num1"
-            print num1
-
-        if speech_input[index] == "and":
-            desig.viewpoint.data = viewpoint1
-            desig.action_type.data = action1
-            desig.actor.data = "robot"
-            desig.instructor.data = "busy_genius"
-            propkey.object_relation.data = order1
-            propkey.object.data = description1
-            propkey.object_color.data = color1
-            propkey.object_size.data = shape1
-            propkey.object_num.data = num1
-            propkey.flag.data = pointer1
-            propkeys.append(propkey)
-            propkey = Propkey()
-            desig.propkeys = propkeys
-            desigs.append(desig)
-            desig = Desig()
-            print "and"
-
-        if speech_input[index] in read_description and index == (len(speech_input) - 1) and order1 == "":
-            rospy.logwarn("description----")
-            order1 = speech_input[index]
-            desig.viewpoint.data = viewpoint1
-            desig.action_type.data = action1
-            desig.actor.data = "robot"
-            desig.instructor.data = "busy_genius"
-            propkey.object_relation.data = order1
-            propkey.object.data = description1
-            propkey.object_color.data = color1
-            propkey.object_size.data = shape1
-            propkey.object_num.data = num1
-            propkey.flag.data = pointer1
-            propkeys.append(propkey)
-            rospy.logwarn(propkey)
-            propkey = Propkey()
-            desig.propkeys = propkeys
-            desigs.append(desig)
-            desig = Desig()
-            order1 = ""
-            break
-        elif speech_input[index] in read_description and index == (len(speech_input) - 1) and order1 != "":
-            rospy.logwarn("description123")
-            rospy.logwarn(propkeys)
-            rospy.logwarn("jsjsjsjsj")
+                desigs.append(desig)
+                desig = Desig()
+                order1 = ""
+                break
+            else:
+                description1 = speech_input[index]
+                desig.viewpoint.data = viewpoint1
+                desig.action_type.data = action1
+                desig.actor.data = "robot"
+                desig.instructor.data = "busy_genius"
+                propkey.object_relation.data = order1
+                propkey.object.data = description1
+                propkey.object_color.data = color1
+                propkey.object_size.data = shape1
+                propkey.object_num.data = num1
+                propkey.flag.data = pointer1
+                propkeys.append(propkey)
+                propkey = Propkey()
+                desig.propkeys = propkeys
+                desigs.append(desig)
+                desig = Desig()
+                break
+        elif speech_input[index] in read_description and index < (len(speech_input) - 1):
             description1 = speech_input[index]
             desig.viewpoint.data = viewpoint1
             desig.action_type.data = action1
@@ -138,31 +150,30 @@ def build_msg(read_action, read_order, read_description, read_color, speech_inpu
             propkey.object_num.data = num1
             propkey.flag.data = pointer1
             propkeys.append(propkey)
-            rospy.logwarn(propkey)
-            rospy.logwarn(propkeys)
-            rospy.logwarn(desig.propkeys)
             propkey = Propkey()
             desig.propkeys = propkeys
-            rospy.logwarn("ente")            
-            rospy.logwarn(propkeys)
-            desigs.append(desig)
-            desig = Desig()
-            break
+            order1 = ""
+            description1 = ""
+            shape1 = ""
+            num1 = ""
+            pointer = ""
+            color1 = ""
 
         if speech_input[index] == "you" or speech_input[index] == "your":
-            viewpoint = "robot"
-            print "viewpoint"
-            print viewpoint
+            viewpoint1 = "robot"
 
         if speech_input[index] == "that":
-            pointer = "true"
-            print "pointer"
-            print pointer
-            
-            
-    print len(desigs)
-    rospy.logwarn("laenge ")
-    rospy.logwarn(desigs[0])
+            pointer1 = "true"
+
+    if len(desigs) == 1:
+        rospy.logwarn(desigs[0])
+    elif len(desigs) == 2:
+        rospy.logwarn(desigs[0])
+        rospy.logwarn(desigs[1])
+    elif len(desigs) == 3:
+        rospy.logwarn(desigs[0])
+        rospy.logwarn(desigs[1])
+        rospy.logwarn(desigs[2])
 
 def callback_sub(data):
     global speech_output
@@ -181,6 +192,10 @@ def callback_sub(data):
     speech_input = re.sub(' the ', ' ', speech_input)
     speech_input = re.sub(' a ', ' ', speech_input)
     speech_input = re.sub(' of ', ' ', speech_input)
+    speech_input = re.sub(' next to ', ' next-to ', speech_input)
+    speech_input = re.sub('look for', 'look-for', speech_input)
+    speech_input = re.sub('look at', 'look-at', speech_input)
+    speech_input = re.sub('search for', 'search-for', speech_input)
     speech_input = speech_input.split(' ')
     speech_output= ""
 
