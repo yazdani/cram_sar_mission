@@ -11,13 +11,15 @@
 #include <tf/LinearMath/Quaternion.h>
 #include <stdio.h> 
 #include <math.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <cstdlib>
 #include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <cstddef>    
+#include "std_msgs/String.h"
 
 using namespace std;
-std::string find_agent;
+//std::string find_agent;
 
 std::vector<string> splitString(string input, string delimiter)
 {
@@ -27,7 +29,7 @@ std::vector<string> splitString(string input, string delimiter)
   return output;
 }
 
-std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
+std::vector<instructor_mission::Desig> stringToDesigMsg(string words, string find_agent)
 {
   //ROS_INFO_STREAM("words: "+words);
   std::vector<string> without_zeros = splitString(words,"0");
@@ -36,6 +38,8 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
   instructor_mission::HMIDesig hmidesig;
   instructor_mission::Propkey prop;
   geometry_msgs::Point point;
+  
+
   for(unsigned i = 0; i < without_zeros.size(); i++)
     {
       if(without_zeros[i].empty())
@@ -53,23 +57,23 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	 if(without_commas[0].compare("take") == 0 && without_commas[1].compare("off") == 0)
 	    {
 	      desig.action_type.data = without_commas[0]+"-off";
-	      desig.actor.data = "red_wasp";
+	      desig.actor.data = "busy_genius";
 	      desig.viewpoint.data = find_agent;//instructor;
-	      desig.instructor.data = "human";//viewpoint;
+	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = "null";
 	    }else if (without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	   {
 	     desig.action_type.data = without_commas[0]+"-picture";
 	      desig.actor.data = "red_wasp";
 	      desig.viewpoint.data = find_agent;//instructor;
-	      desig.instructor.data = "human";//viewpoint;
+	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = "null";
 	   }else
 	    {
 	      desig.action_type.data = without_commas[0];
 	      desig.actor.data = "red_wasp";
 	      desig.viewpoint.data = find_agent;//instructor;
-	      desig.instructor.data = "human";//viewpoint;
+	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = without_commas[1];
 	    }
 	 //Go to your LEFT  => move(to,robot(left))
@@ -85,9 +89,9 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	 prop.object_size.data = without_commas[4];
 	 prop.object_num.data = without_commas[5];
 	 prop.flag.data = without_commas[6];
-	 prop.pointing_gesture.x = 0;
-	 prop.pointing_gesture.y = 0;
-	 prop.pointing_gesture.z = 0;
+	 prop.pointing_gesture.pose.position.x = 0;
+	 prop.pointing_gesture.pose.position.y = 0;
+	 prop.pointing_gesture.pose.position.z = 0;
 	 props.push_back(prop);
 	 prop.object_relation.data = without_commas[9];
 	 if(without_commas[10].compare("left") == 0 || without_commas[10].compare("right") == 0)
@@ -103,9 +107,9 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	 prop.object_size.data = without_commas[12];
 	 prop.object_num.data = without_commas[13];
 	 prop.flag.data = without_commas[14];
-	 prop.pointing_gesture.x = 0;
-	 prop.pointing_gesture.y = 0;
-	 prop.pointing_gesture.z = 0;
+	 prop.pointing_gesture.pose.position.x = 0;
+	 prop.pointing_gesture.pose.position.y = 0;
+	 prop.pointing_gesture.pose.position.z = 0;
 	 props.push_back(prop);
 	 desig.propkeys = props;
        
@@ -119,21 +123,21 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	      desig.action_type.data = without_commas[0]+"-off";
 	      desig.actor.data = find_agent;//instructor;
 	      desig.viewpoint.data = find_agent;//instructor;
-	      desig.instructor.data = "human";//viewpoint;
+	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = "null";	 
 	    }else if (without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	   {
 	     desig.action_type.data = without_commas[0]+"-picture";
 	      desig.actor.data = find_agent;//instructor;
 	      desig.viewpoint.data = find_agent;//instructor;
-	      desig.instructor.data = "human";//viewpoint;
+	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = "null";	 
 	   }else
 	    {
 	      desig.action_type.data = without_commas[0];
 	      desig.actor.data = find_agent;//instructor;
 	      desig.viewpoint.data = find_agent;//instructor;
-	      desig.instructor.data = "human";//viewpoint;
+	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = without_commas[1];
 	    }
 	  if(without_commas[2].compare("left") == 0 || without_commas[2].compare("right") == 0)
@@ -149,9 +153,9 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 	  prop.object_size.data = without_commas[4];
 	  prop.object_num.data = without_commas[5];
 	  prop.flag.data = without_commas[6];
-	  prop.pointing_gesture.x = 0;
-	  prop.pointing_gesture.y = 0;
-	  prop.pointing_gesture.z = 0;
+	  prop.pointing_gesture.pose.position.x = 0;
+	  prop.pointing_gesture.pose.position.y = 0;
+	  prop.pointing_gesture.pose.position.z = 0;
 	  props.push_back(prop);
 	  desig.propkeys = props;
 	}
@@ -171,112 +175,58 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words)
 
 
 
-bool getCmd(instructor_mission::call_cmd::Request &req,
-            instructor_mission::call_cmd::Response &res)
+//bool getCmd(instructor_mission::call_cmd::Request &req,
+//            instructor_mission::call_cmd::Response &res)
+void getCmd(std_msgs::String request)
 {
+  string req = request.data;
   ros::NodeHandle n_client;
   ros::NodeHandle n_client_view;
+  ros::NodeHandle n_client_agent;
   instructor_mission::text_parser srv;
+  instructor_mission::text_parser srv_agent;
   ros::ServiceClient client = n_client.serviceClient<instructor_mission::text_parser>("/ros_parser");
-  std::string received_highlevel_cmd = req.goal;
+  std::string received_highlevel_cmd = req;//.goal;
   ros::ServiceClient client_view = n_client_view.serviceClient<instructor_mission::text_parser>("/add_viewpoint");
+  ros::ServiceClient client_agent = n_client_agent.serviceClient<instructor_mission::text_parser>("/add_agent_name");
   std::string inp;
  
-  std::vector<string> actions = splitString(req.goal, " ");
+  std::vector<string> actions = splitString(req, " ");
   if(actions.size()== 2)
    {
-     boost::replace_all(req.goal,"Go right","Go right nil");
-     boost::replace_all(req.goal,"Go left","Go left nil");
-     boost::replace_all(req.goal,"Come back","Come back nil");
-     boost::replace_all(req.goal,"Go straight","Go straight nil");
-     boost::replace_all(req.goal,"Go ahead","Go ahead nil");
-     boost::replace_all(req.goal,"Move right","Go right nil");
-     boost::replace_all(req.goal,"Move left","Go left nil");
-     boost::replace_all(req.goal,"Move straight","Go straight nil");
-     boost::replace_all(req.goal,"Move ahead","Go ahead nil");
+     ROS_INFO_STREAM("actions.size()");
+     ROS_INFO_STREAM(actions.size());
+     boost::replace_all(req,"Go right","Go right nil");
+     boost::replace_all(req,"Go left","Go left nil");
+     boost::replace_all(req,"Come back","Come back nil");
+     boost::replace_all(req,"Go straight","Go straight nil");
+     boost::replace_all(req,"Go ahead","Go ahead nil");
+     boost::replace_all(req,"Move right","Go right nil");
+     boost::replace_all(req,"Move left","Go left nil");
+     boost::replace_all(req,"Move straight","Go straight nil");
+     boost::replace_all(req,"Move ahead","Go ahead nil");
    }
  
   if(actions.size() == 4)
    {
-     if (req.goal.compare("Go to your right") == 0)
+     if (req.compare("Go to your right") == 0)
        {
-         boost::replace_all(req.goal,"Go to your right","Go right nil");
-         inp = "wasp";
-         srv.request.goal = inp;
-         if (client_view.call(srv))
-           {
-             ROS_INFO_STREAM("Waiting for the Viewpoint");
-             find_agent = srv.response.result;
-           }
-         else
-           {
-             ROS_ERROR("Failed to call the service in Viewpoint");
-             return 1;
-           }
-       }else if (req.goal.compare("Go to your left") == 0)
+         boost::replace_all(req,"Go to your right","Go right nil");
+       }else if (req.compare("Go to your left") == 0)
        {
-         boost::replace_all(req.goal,"Go to your left","Go left nil");
-         inp = "wasp";
-         srv.request.goal = inp;
-         if (client_view.call(srv))
-           {
-             ROS_INFO_STREAM("Waiting for the Viewpoint");
-             find_agent = srv.response.result;
-           }
-         else
-           {
-             ROS_ERROR("Failed to call the service in Viewpoint");
-             return 1;
-           }
-       }else if (req.goal.compare("Move to your left") == 0)
+         boost::replace_all(req,"Go to your left","Go left nil");
+       }else if (req.compare("Move to your left") == 0)
        {
-         boost::replace_all(req.goal,"Move to your left","Go left nil");
-         inp = "wasp";
-         srv.request.goal = inp;
-         if (client_view.call(srv))
-           {
-             ROS_INFO_STREAM("Waiting for the Viewpoint");
-             find_agent = srv.response.result;
-           }
-         else
-           {
-             ROS_ERROR("Failed to call the service in Viewpoint");
-             return 1;
-           }
-       }else if  (req.goal.compare("Move to your right") == 0)
+         boost::replace_all(req,"Move to your left","Go left nil");
+       }else if  (req.compare("Move to your right") == 0)
        {
-         boost::replace_all(req.goal,"Move to your right","Go right nil");
-         inp = "wasp";
-         srv.request.goal = inp;
-         if (client_view.call(srv))
-           {
-             ROS_INFO_STREAM("Waiting for the Viewpoint");
-             find_agent = srv.response.result;
-           }
-         else
-           {
-             ROS_ERROR("Failed to call the service in Viewpoint");
-             return 1;
-           }
+         boost::replace_all(req,"Move to your right","Go right nil");
        }
      
    }
-  ROS_INFO_STREAM("REQ-GOAL");
-  ROS_INFO_STREAM(req.goal);
-  inp ="get";
-  srv.request.goal = inp;
-  if (client_view.call(srv))
-     {
-     	ROS_INFO_STREAM("Waiting for the Viewpoint");
-	find_agent = srv.response.result;
-      }
-     else
-      {
-     	ROS_ERROR("Failed to call the service in Viewpoint");
-     	return 1;
-      }
-
-  srv.request.goal = req.goal;
+  ROS_INFO_STREAM("req.goal");
+  ROS_INFO_STREAM(req);
+  srv.request.goal = req;
   if (client.call(srv))
      {
      	ROS_INFO_STREAM("Waiting for the TLDL parser");
@@ -284,13 +234,24 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
      else
       {
      	ROS_ERROR("Failed to call the service in TLDL");
-     	return 1;
+     	return;
       }
 
+  srv_agent.request.goal = "get";
+  if (client_agent.call(srv_agent))
+     {
+       ROS_INFO_STREAM("Waiting Agent Server");
+     }
+  else
+    {
+      ROS_ERROR("Failed to call Agent Server");
+      return;
+    }
 
   std::vector<instructor_mission::Desig> desigs;
   instructor_mission::Desig desig;
-  desigs = stringToDesigMsg(srv.response.result);
+  string find_agent = srv_agent.response.result;
+  desigs = stringToDesigMsg(srv.response.result,find_agent);
   ROS_INFO_STREAM("TEST2");
   
   ros::NodeHandle ncram_client;
@@ -307,20 +268,20 @@ bool getCmd(instructor_mission::call_cmd::Request &req,
      else
       {
      	ROS_ERROR("Failed to call the service in CRAM");
-     	return 1;
+     	return;
       }
 
 
   // ------ROS_INFO_STREAM(cram_srv.response.result);
-  res.result = "Instruction completed!\nPlease give next instruction.";
-  return true; 
+  //res.result = "Instruction completed!\nPlease give next instruction.";
+  //return; 
 }
 
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "call_command_server");
   ros::NodeHandle n;
-  ros::ServiceServer service = n.advertiseService("callInstruction", getCmd);
+  ros::Subscriber sub = n.subscribe("callInstruction",1000,getCmd);
   ROS_INFO("Ready to receive new commands");
   ros::spin();
   
