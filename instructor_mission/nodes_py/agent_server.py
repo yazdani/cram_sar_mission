@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('instructor_mission')
-from instructor_mission.srv import *
+import roslib; roslib.load_manifest('hmi_interpreter')
+from hmi_interpreter.srv import *
 import rospy
 import re
 import sys
@@ -14,32 +14,33 @@ import os
 import commands
 from std_msgs.msg import String
 
-agent="busy_genius"
-def call_viewpoint(req):
+agent="robot"
+def call_agent_name(req):
     print "---------------------------------------------first call"
     global agent
     print req.goal
-    print "Returning viewpoint: "
+    print "Returning agentname: "
     print req.goal
     if req.goal != "get":
-        print agent
         agent = req.goal
         print "agent123: "
         print agent
+        if agent == "ROBOTS" or agent == "robots":
+            agent = "robot"
         return text_parserResponse(agent)
     else:
         print "agent456: "
         print agent
         tmp = agent
-        agent = "busy_genius"       
+        agent = "robot"       
         return text_parserResponse(tmp)
 
-def get_viewpoint_server():
-    rospy.init_node("add_viewpoint_server")
-    s = rospy.Service("add_viewpoint", text_parser, call_viewpoint)
+def get_agent_server():
+    rospy.init_node("add_agent_server")
+    s = rospy.Service("add_agent_name", text_parser, call_agent_name)
     print "Ready to set the robot name."
     rospy.spin()
 
 
 if __name__ == "__main__":
-    get_viewpoint_server()
+    get_agent_server()

@@ -2,15 +2,23 @@
 
 from instructor_mission.srv import *
 import rospy
+import re
 
 speech_output = ""
 value = ""
 
 def parsing(res):
     global value
+    print "parsing"
+    print res
+    res = res.lower()
+    res = re.sub('next to', 'to', res)
+    res = re.sub('close to', 'next', res)
+    print res
     result = res.split(" ")
     value = ""
-
+    print "res"
+    print res
     if result[1] == "picture":
         action = result[0]+"-picture"
         shape = "null"
@@ -79,6 +87,12 @@ def parsing(res):
         elif len(resume) == 6: #Go to big tree next rock or Go to tree next big rock
             action=resume[0]
             spatial = resume[1]
+            if resume[1] == "to" and resume[3] == "next":
+                print "value"
+                value = action+" "+resume[1]+" "+"null"+" "+"true"+ " "+resume[2]+" 1 "+resume[3]+" "+"null"+" "+"false "+resume[5]
+            elif resume[1] == "next" and resume[4] == "to":
+                value = action+" "+resume[1]+" "+"null"+" "+"true"+ " "+resume[3]+" 1 "+resume[4]+" "+"null"+" "+"false "+resume[5]
+
             if resume[2] == "big" or resume[2] == "small":
                 shape = resume[2]
                 value = action+" "+spatial+" "+shape+" "+"false"+ " "+resume[3]+" 1 "+resume[4]+" "+"null"+" "+"false "+resume[5]
@@ -91,8 +105,11 @@ def parsing(res):
                 value = action+" "+spatial+" "+"null"+" "+"false"+ " "+resume[2]+" 1 "+resume[3]+" "+shape2+" "+"false "+resume[5]
             elif resume[4] == "that":
                 value = action+" "+spatial+" "+"null"+" "+"false"+ " "+resume[2]+" 1 "+resume[3]+" "+"null"+" "+"true "+resume[5]
-                                
             
+            print "value"
+            print value
+            print resume[1]
+            print resume[3]
         elif len(resume) == 7: #Go to big tree next big rock
             action=resume[0]
             spatial = resume[1]
@@ -195,9 +212,13 @@ def parsing(res):
     
 
 def call_parser(req):
-    print "Returning the value"
+    print "call_parser"
     parsing(req.goal)
     speech_output = value
+    print "speech_output"
+    print speech_output
+    print "value"
+    print value
     return text_parserResponse(speech_output)
 
 

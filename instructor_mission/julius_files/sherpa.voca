@@ -58,6 +58,9 @@ THAT       dh ae t
 % ACTION_TAKE_PICTURE
 TAKEPICTURE  t ey k aa p ih k ch er
 
+% ACTION_TAKE
+TAKE  t ey k
+
 % ACTION_SHOW
 SHOW       sh ow
 
@@ -72,6 +75,7 @@ INFRONT    ih n f r aa n t
 
 % PROPERTIES
 BIG    b ih g
+BIG    b eh g
 SMALL   s m ao l
 
 % YOUR

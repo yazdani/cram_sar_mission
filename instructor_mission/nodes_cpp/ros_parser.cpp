@@ -94,7 +94,12 @@ string without_brakets(string value)
  
   for(unsigned i = 0; i < actions.size(); i++)
     {
+      boost::replace_all(actions[i],"fly(right)","move(right,nil(null))");
+     boost::replace_all(actions[i],"fly(left)","move(left,nil(null))");
+      boost::replace_all(actions[i],"move(right)","move(right,nil(null))");
+      boost::replace_all(actions[i],"move(left)","move(left,nil(null))");
       boost::replace_all(actions[i],"picture)","picture,nil(null))");
+      boost::replace_all(actions[i],"back)","back,nil(null))");
       boost::replace_all(actions[i],"off)","off,nil(null))");
       boost::replace_all(actions[i],"image)","picture,nil(null))");
       boost::replace_all(actions[i],",tree)",",nil(tree))");
@@ -280,9 +285,10 @@ bool parser(instructor_mission::text_parser::Request &req,
          instructor_mission::text_parser::Response &res)
 {
   ROS_INFO_STREAM(req.goal);
+  boost::algorithm::to_lower(req.goal);
   instructor_mission::protocol_dialogue msg;
   std::vector<string> marray;
-  msg.agent.data="human";
+  msg.agent.data="busy_genius";
   msg.command.data = req.goal;
   chatter_pub.publish(msg);
   res.result = without_brakets(interpretByParser(req.goal));

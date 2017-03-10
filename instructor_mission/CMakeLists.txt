@@ -165,9 +165,9 @@ add_dependencies(cmd_to_points instructor_mission_gencpp)
 #target_link_libraries(send_cmd ${catkin_LIBRARIES})
 #add_dependencies(send_cmd instructor_mission_gencpp)
 
-#add_executable(main_server nodes_cpp/main_server.cpp)
-#target_link_libraries(main_server ${catkin_LIBRARIES})
-#add_dependencies(main_server instructor_mission_gencpp)
+add_executable(main_server nodes_cpp/main_server.cpp)
+target_link_libraries(main_server ${catkin_LIBRARIES})
+add_dependencies(main_server instructor_mission_gencpp)
 #############
 ## Install ##
 #############

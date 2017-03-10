@@ -1,10 +1,10 @@
 <launch>
-  <node name="recognizer" pkg="pocketsphinx" type="recognizer.py">
+  <!--node name="recognizer" pkg="pocketsphinx" type="recognizer.py">
     
     <param name="mic_name" value="alsa_input.usb-0b0e_Jabra_SPEAK_410_USB_50C971FBCD12x010900-00-USB.analog-mono"/>
     <param name="lm" value="$(find instructor_mission)/dict/corpus.lm"/>
     <param name="dict" value="$(find instructor_mission)/dict/corpus.dic"/>
-  </node>
+  </node-->
 
   <node name="speechToText" pkg="instructor_mission" type="speechToText.py">
     <param name="action" value="$(find instructor_mission)/dict/action.txt"/>

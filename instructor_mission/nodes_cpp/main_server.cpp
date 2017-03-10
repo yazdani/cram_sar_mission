@@ -57,7 +57,7 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words, string fin
 	 if(without_commas[0].compare("take") == 0 && without_commas[1].compare("off") == 0)
 	    {
 	      desig.action_type.data = without_commas[0]+"-off";
-	      desig.actor.data = "busy_genius";
+	      desig.actor.data = "red_wasp";
 	      desig.viewpoint.data = find_agent;//instructor;
 	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = "null";
@@ -121,21 +121,21 @@ std::vector<instructor_mission::Desig> stringToDesigMsg(string words, string fin
 	  if(without_commas[0].compare("take") == 0 && without_commas[1].compare("off") == 0)
 	    {
 	      desig.action_type.data = without_commas[0]+"-off";
-	      desig.actor.data = find_agent;//instructor;
+	      desig.actor.data = "red_wasp";//instructor;
 	      desig.viewpoint.data = find_agent;//instructor;
 	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = "null";	 
 	    }else if (without_commas[0].compare("take") == 0 || without_commas[0].compare("show") == 0 )
 	   {
 	     desig.action_type.data = without_commas[0]+"-picture";
-	      desig.actor.data = find_agent;//instructor;
+	      desig.actor.data = "red_wasp";//instructor;
 	      desig.viewpoint.data = find_agent;//instructor;
 	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = "null";	 
 	   }else
 	    {
 	      desig.action_type.data = without_commas[0];
-	      desig.actor.data = find_agent;//instructor;
+	      desig.actor.data = "red_wasp";//instructor;
 	      desig.viewpoint.data = find_agent;//instructor;
 	      desig.instructor.data = "busy_genius";//viewpoint;
 	      prop.object_relation.data = without_commas[1];
@@ -185,10 +185,11 @@ void getCmd(std_msgs::String request)
   ros::NodeHandle n_client_agent;
   instructor_mission::text_parser srv;
   instructor_mission::text_parser srv_agent;
+  instructor_mission::text_parser srv_view;
   ros::ServiceClient client = n_client.serviceClient<instructor_mission::text_parser>("/ros_parser");
   std::string received_highlevel_cmd = req;//.goal;
   ros::ServiceClient client_view = n_client_view.serviceClient<instructor_mission::text_parser>("/add_viewpoint");
-  ros::ServiceClient client_agent = n_client_agent.serviceClient<instructor_mission::text_parser>("/add_agent_name");
+  //  ros::ServiceClient client_agent = n_client_agent.serviceClient<instructor_mission::text_parser>("/add_agent_name");
   std::string inp;
  
   std::vector<string> actions = splitString(req, " ");
@@ -212,18 +213,63 @@ void getCmd(std_msgs::String request)
      if (req.compare("Go to your right") == 0)
        {
          boost::replace_all(req,"Go to your right","Go right nil");
+	 
+	 srv_view.request.goal = "red_wasp";
+	 if (client_view.call(srv_view))
+	   {
+       ROS_INFO_STREAM("Waiting Agent Server");
+	   }
+	 else
+	   {
+	     ROS_ERROR("Failed to call Agent Server");
+	     return;
+	   }
+
        }else if (req.compare("Go to your left") == 0)
        {
          boost::replace_all(req,"Go to your left","Go left nil");
+	 srv_view.request.goal = "red_wasp";
+	 if (client_view.call(srv_view))
+	   {
+	     ROS_INFO_STREAM("Waiting Agent Server");
+	   }
+	 else
+	   {
+	     ROS_ERROR("Failed to call Agent Server");
+	     return;
+	   }
        }else if (req.compare("Move to your left") == 0)
        {
          boost::replace_all(req,"Move to your left","Go left nil");
+	 srv_view.request.goal = "red_wasp";
+	 if (client_view.call(srv_view))
+	   {
+	     ROS_INFO_STREAM("Waiting Agent Server");
+	   }
+	 else
+	   {
+	     ROS_ERROR("Failed to call Agent Server");
+	     return;
+	   }
        }else if  (req.compare("Move to your right") == 0)
        {
          boost::replace_all(req,"Move to your right","Go right nil");
+	 srv_view.request.goal = "red_wasp";
+	 if (client_view.call(srv_view))
+	   {
+	     ROS_INFO_STREAM("Waiting Agent Server");
+	   }
+	 else
+	   {
+	     ROS_ERROR("Failed to call Agent Server");
+	     return;
+	   }
        }
-     
-   }
+    
+    }
+
+
+
   ROS_INFO_STREAM("req.goal");
   ROS_INFO_STREAM(req);
   srv.request.goal = req;
@@ -237,8 +283,8 @@ void getCmd(std_msgs::String request)
      	return;
       }
 
-  srv_agent.request.goal = "get";
-  if (client_agent.call(srv_agent))
+  srv_view.request.goal = "get";
+  if (client_view.call(srv_view))
      {
        ROS_INFO_STREAM("Waiting Agent Server");
      }
@@ -250,7 +296,7 @@ void getCmd(std_msgs::String request)
 
   std::vector<instructor_mission::Desig> desigs;
   instructor_mission::Desig desig;
-  string find_agent = srv_agent.response.result;
+  string find_agent = srv_view.response.result;
   desigs = stringToDesigMsg(srv.response.result,find_agent);
   ROS_INFO_STREAM("TEST2");
   
